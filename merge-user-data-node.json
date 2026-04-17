@@ -1,0 +1,15 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Получаем данные пользователя из Loop (через предыдущие ноды)\nconst loopData = $('Loop Over Items').item.json;\n\n// Получаем результат от Telegram\nconst telegramResult = $input.item.json;\n\n// Объединяем данные\nreturn [{\n  json: {\n    id: loopData.id,                    // record ID из Loop\n    chat_id: loopData.chat_id,          // chat_id из Loop\n    task_text: loopData.task_text,      // текст задания\n    telegram_result: telegramResult     // результат от Telegram\n  }\n}];"
+      },
+      "id": "merge-user-data-001",
+      "name": "Merge User Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [9900, 6848]
+    }
+  ],
+  "connections": {}
+}

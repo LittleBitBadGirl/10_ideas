@@ -1,0 +1,2516 @@
+{
+  "name": "10 идей",
+  "nodes": [
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $('генератор').item.json.content[0].text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1696,
+        -48
+      ],
+      "id": "d6f4fc15-98c7-4f7c-bef7-76b4f5717ae2",
+      "name": "Send a text message",
+      "webhookId": "205bfea0-0501-4e6e-846c-354f1bcc4c1a",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9907cdbd-225c-4f92-9dcf-729e8e889ab9",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/start",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        288,
+        208
+      ],
+      "id": "2d81b4f1-db91-43ca-a7c2-a4ee6a71ac52",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "active",
+            "username": "={{ $json.message.chat.username }}",
+            "chat_id": "={{ $json.message.chat.id }}",
+            "registration_date": "={{ DateTime.fromSeconds($json.message.date).toISO() }}",
+            "first_name": "={{ $json.message.chat.first_name }}"
+          },
+          "matchingColumns": [
+            "chat_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "active",
+                  "value": "active"
+                },
+                {
+                  "name": "stopped",
+                  "value": "stopped"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "registration_date",
+              "displayName": "registration_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ideas",
+              "displayName": "Ideas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        464,
+        192
+      ],
+      "id": "0576c0d5-ad6a-4667-b614-64e7b285cbf4",
+      "name": "Create or update a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "filterByFormula": "{status}='active'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1488,
+        -48
+      ],
+      "id": "1934c103-0bf0-4e36-a3c6-81baede70347",
+      "name": "Search records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.from.id }}",
+        "text": "Привет! 👋 Добро пожаловать в тренажер креативности \"10 идей\"\n\nТы здесь, чтобы раскачать свою творческую мышцу. Как мышцы тела растут от упражнений, так и мозг привыкает генерировать решения, если его тренировать.\n\n🧠 Что это за упражнение?\nАвтор метода - Джеймс Альтучер. Суть проста: придумывать по 10 идей на заданную тему каждый день.\n— Первые 4-5 идей приходят легко\n— Следующие - с трудом\n— Последние 2 - это чистый креатив, когда мозг \"вспотел\" и начал работать по-настоящему\n\n📅 Как это работает тут?\nКаждый день в 9:00 я буду присылать тебе новую тему. Твоя задача - не оценивать идеи (\"плохая/хорошая\"), а просто записать 10 штук. Пусть даже самых безумных!\n\nГотов начать? Жди первое задание! 🚀",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        192
+      ],
+      "id": "6c84d2f1-fe4f-483e-8a26-87b80b206c9c",
+      "name": "Send a text message1",
+      "webhookId": "205bfea0-0501-4e6e-846c-354f1bcc4c1a",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8385af62-e0f2-418d-8155-baca3f90b59c",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1888,
+        -48
+      ],
+      "id": "47a7824d-1478-4733-9ce3-5d98042f1702",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Search records').item.json.id }}",
+            "status": "stopped"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "active",
+                  "value": "active"
+                },
+                {
+                  "name": "stopped",
+                  "value": "stopped"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "registration_date",
+              "displayName": "registration_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Ideas",
+              "displayName": "Ideas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2064,
+        32
+      ],
+      "id": "a172df28-8588-4783-9683-72e27c23ad68",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "filterByFormula": "=",
+        "returnAll": false,
+        "limit": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        16,
+        -224
+      ],
+      "id": "09372348-51a9-4834-a4a4-a96bd36f8369",
+      "name": "Search user",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $now.toISO() }}",
+            "chat_id": "={{ [ $('Search records').item.json.id ] }}",
+            "prompt_text": "={{ $('генератор').item.json.content[0].text }}",
+            "status": "pending",
+            "Users": "={{ $('Search records').item.json.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "prompt_text",
+              "displayName": "prompt_text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_answer",
+              "displayName": "user_answer",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ideas_count",
+              "displayName": "ideas_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "pending",
+                  "value": "pending"
+                },
+                {
+                  "name": "done",
+                  "value": "done"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Users",
+              "displayName": "Users",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        2064,
+        -144
+      ],
+      "id": "129efa36-75f2-4f0c-8dd6-a974fbe403ac",
+      "name": "Save idea",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Собираем тексты всех найденных идей в один список\nconst history = items.map(item => item.json.prompt_text).join(\"\\n- \");\n\n// Возвращаем ОДИН элемент, чтобы AI сработал 1 раз\nreturn [{\n  json: {\n    history_text: history\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        -128
+      ],
+      "id": "e238a5a3-a448-4308-a024-55dba44da499",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        176,
+        -224
+      ],
+      "id": "292f8c47-bbba-4336-a105-73c6067410cd",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "filterByFormula": "={chat_id} = {{ $json.message.chat.id }}",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        416
+      ],
+      "id": "9d3ab822-6d07-4f7d-a057-c9a2c0b79994",
+      "name": "Search user1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "filterByFormula": "=AND(FIND('{{ $json.id }}', {Users}) > 0, {status}='pending')",
+        "returnAll": false,
+        "limit": 1,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "ID",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1008,
+        512
+      ],
+      "id": "e88daa57-6efe-42b9-970c-ec60c27fb7d6",
+      "name": "Search last idea",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "done",
+            "user_answer": "={{ $('Telegram Trigger1').item.json.message.text }}",
+            "id": "={{ $('Search last idea').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "prompt_text",
+              "displayName": "prompt_text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_answer",
+              "displayName": "user_answer",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ideas_count",
+              "displayName": "ideas_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "pending",
+                  "value": "pending"
+                },
+                {
+                  "name": "done",
+                  "value": "done"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Users",
+              "displayName": "Users",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1824,
+        512
+      ],
+      "id": "8b70685f-fcd6-47ea-a7ca-a6b2f7c61a71",
+      "name": "Save update answear",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.from.id }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2224,
+        512
+      ],
+      "id": "bee30d35-7e14-4851-9390-d0cce0248877",
+      "name": "Send a text message2",
+      "webhookId": "205bfea0-0501-4e6e-846c-354f1bcc4c1a",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        256,
+        1632
+      ],
+      "id": "91255c4d-5e9d-4a31-a208-129136dbe24a",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "content": "Flow выдачи задания"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -512,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "24667063-2e70-4304-80ed-0d405491390e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Flow записи ответа пользователя\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -512,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "4f9a1376-23c4-4900-92e1-7b54e74a9d04",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Flow аналитика"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -528,
+        1632
+      ],
+      "typeVersion": 1,
+      "id": "b87503c7-2f22-4feb-b183-96999d92d3fe",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Flow редактирования сообщения пользователем"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        1024
+      ],
+      "typeVersion": 1,
+      "id": "e2a512a7-eed2-434d-b5df-1c0b3157360e",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "filterByFormula": "={chat_id} ={{ $json.edited_message.chat.id }}",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        1040
+      ],
+      "id": "1f73bc50-2c52-4f28-87fe-129d9c87c811",
+      "name": "Search user2",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        -208
+      ],
+      "id": "238ffb42-2b00-457a-8696-5dbd96117f50",
+      "name": "Trigger 9:00",
+      "retryOnFail": false,
+      "executeOnce": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "filterByFormula": "=AND(FIND('{{ $('Search user2').first().json.id }}', {Users}) > 0, {status}='done')",
+        "returnAll": false,
+        "limit": 1,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "ID",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        608,
+        1040
+      ],
+      "id": "1ff147f1-687e-475c-aa3e-28e698f65c2c",
+      "name": "Search last completed idea",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_answer": "={{ $('Telegram Trigger1').item.json.edited_message.text }}",
+            "id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "prompt_text",
+              "displayName": "prompt_text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_answer",
+              "displayName": "user_answer",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ideas_count",
+              "displayName": "ideas_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "pending",
+                  "value": "pending"
+                },
+                {
+                  "name": "done",
+                  "value": "done"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Users",
+              "displayName": "Users",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        1040
+      ],
+      "id": "9a60baa8-5018-4c6d-98dc-bd4e26c47a8c",
+      "name": "Update answer",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.edited_message.from.id }}",
+        "text": "Спасибо за уточнение",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1024,
+        1040
+      ],
+      "id": "02d4c688-9013-437f-98eb-dacee54690f1",
+      "name": "Send a text message3",
+      "webhookId": "205bfea0-0501-4e6e-846c-354f1bcc4c1a",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 15 вариантов ответов на добавление идеи\nconst responses = [\n  \"Записал ✓\",\n  \"Готово ✓\",\n  \"Принял 👌\",\n  \"Сохранил\",\n  \"Записал. До завтра!\",\n  \"Принял. Увидимся завтра 👋\",\n  \"Кайф, до завтра! \",\n  \"Сохранил. Завтра снова увидимся\",\n  \"Круто. Завтра ещё поупражняемся\",\n  \"Записал. До завтра 🚀\",\n  \"Принято. До встречи!\",\n  \"Зафиксировал ✓\",\n  \"Готово. Завтра жду новых идей\",\n  \"Сохранил. До скорого!\"\n];\n\n// Выбираем случайный ответ\nconst randomResponse = responses[Math.floor(Math.random() * responses.length)];\n\nreturn [{\n  json: {\n    message: randomResponse\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        512
+      ],
+      "id": "f22623c1-21b8-430a-87b0-ccb95219c334",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b56895e4-1e14-49b6-bbf4-29679acf78ac",
+              "leftValue": "={{ $('Telegram Trigger1').first().json.message.reply_to_message.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        688,
+        416
+      ],
+      "id": "b3219a6e-a99b-4f8a-942c-751b263c8019",
+      "name": "is replay to message"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "filterByFormula": "=AND(\n  FIND('{{ $('Search user1').first().json.id }}', {Users}) > 0,\n  {prompt_text} = '{{ $('Telegram Trigger1').item.json.message.reply_to_message.text }}'\n)",
+        "returnAll": false,
+        "limit": 1,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "ID",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1008,
+        352
+      ],
+      "id": "f75c1016-35f4-4ee3-b6a0-3447f91068b8",
+      "name": "Search idea by reply text",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date().toISOString().split('T')[0];\nconst userData = $('Search user1').first().json;\nconst lastActivity = userData.last_activity_date;\nconst currentStreak = userData.streak_current || 0;\nconst recordStreak = userData.streak_record || 0;\nconst currentTotal = userData.total_completed || 0;\n\nlet newStreak = 1;\n\nif (lastActivity) {\n  const lastDate = new Date(lastActivity);\n  const todayDate = new Date(today);\n  const diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));\n  \n  if (diffDays === 0) {\n    newStreak = currentStreak;\n  } else if (diffDays === 1) {\n    newStreak = currentStreak + 1;\n  } else {\n    newStreak = 1;\n  }\n} else {\n  newStreak = 1;\n}\n\nconst newRecord = Math.max(newStreak, recordStreak);\nconst newTotal = currentTotal + 1;\n\n// ОДИН return со ВСЕМИ данными\nreturn [{\n  json: {\n    userId: userData.id,\n    streak_current: newStreak,\n    streak_record: newRecord,\n    last_activity_date: today,\n    total_completed: newTotal\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        512
+      ],
+      "id": "71e0443d-d735-42a0-b1e4-956a2e627fe5",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "filterByFormula": "{status} = 'active'",
+        "returnAll": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        1632
+      ],
+      "id": "c115da8f-fea6-44ba-a9e3-eb4cc70ab125",
+      "name": "Search All Active Users",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.fields.chat_id }}",
+        "text": "=📊 Твоя статистика за неделю:\n\n🔥 СЕРИЯ: {{ $('Calculate Metrics').item.json.streak_current }} дней подряд!\nТвой рекорд: {{ $('Calculate Metrics').item.json.streak_record }} дней.\n\n📈 СРЕДНЯЯ ДЛИНА ОТВЕТОВ:\nЭта неделя: {{ $('Calculate Metrics').item.json.avgWords }} слов\nПрошлый период: {{ $('Calculate Metrics').item.json.avgWordsLast }} слов\n\n✅ ВЫПОЛНЕНО: {{ $('Calculate Metrics').item.json.completedTasks }} из 7 заданий\n⚠️ ПРОПУЩЕНО: {{ $('Calculate Metrics').item.json.missedDays }} дней\n\n🏆 ЛУЧШЕЕ ЗАДАНИЕ:\n\"{{ $('Calculate Metrics').item.json.bestPrompt }}\"\n\n💯 ЗА ВСЮ ИСТОРИЮ: {{ $('Calculate Metrics').item.json.totalCompleted }} заданий!\n\nПродолжай в том же духе! 🚀\n\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1072,
+        1648
+      ],
+      "id": "ff2dbec9-a57e-419c-ad06-f43c6d501b37",
+      "name": "Send Analytics",
+      "webhookId": "0e715af7-7e55-4704-b9c5-2a6031f1afbb",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtHour": 20
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -208,
+        1648
+      ],
+      "id": "3abef9e3-0f90-463f-9828-00a38d1ee533",
+      "name": "Schedule Sunday 8pm",
+      "retryOnFail": false,
+      "executeOnce": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.userId }}",
+            "avg_word_count": "={{ $json.avgWords }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "active",
+                  "value": "active"
+                },
+                {
+                  "name": "stopped",
+                  "value": "stopped"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "registration_date",
+              "displayName": "registration_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Ideas",
+              "displayName": "Ideas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "streak_current",
+              "displayName": "streak_current",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "streak_record",
+              "displayName": "streak_record",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "avg_word_count",
+              "displayName": "avg_word_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "total_completed",
+              "displayName": "total_completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_activity_date",
+              "displayName": "last_activity_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        1648
+      ],
+      "id": "3e278c74-e5ed-4aef-a99b-e641671d4b66",
+      "name": "Update avg_word_count",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "filterByFormula": "=AND(   FIND('{{ $json.id }}', {Users}) > 0,   {Created} > DATEADD(NOW(), -7, 'days') )",
+        "returnAll": false,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "Created",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        464,
+        1648
+      ],
+      "id": "7aa3c8f2-621e-41cc-bb81-70b0f10623ab",
+      "name": "Search Ideas for This User",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const ideas = $('Search Ideas for This User').all();\nconst userData = $('Search All Active Users').item.json;\n\n// Проверяем, не сломана ли серия\nconst today = new Date();\nconst lastActivity = userData.last_activity_date;\nlet actualStreakCurrent = userData.streak_current || 0;\n\nif (lastActivity) {\n  const lastDate = new Date(lastActivity);\n  const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));\n  \n  if (diffDays > 1) {\n    actualStreakCurrent = 0; // Серия сломана\n  }\n}\n\n// Считаем метрики\nconst doneIdeas = ideas.filter(i => i.json.status === 'done');\nconst completedTasks = doneIdeas.length;\nconst totalWords = doneIdeas.reduce((sum, i) => {\n  const text = i.json.user_answer || '';\n  return sum + text.split(/\\s+/).length;\n}, 0);\n\nconst avgWords = completedTasks > 0 ? Math.round(totalWords / completedTasks) : 0;\nconst missedDays = 7 - completedTasks;\n\n// Лучшее задание\nconst bestTask = doneIdeas.sort((a, b) => \n  (b.json.user_answer?.length || 0) - (a.json.user_answer?.length || 0)\n)[0];\n\nreturn [{\n  json: {\n    chat_id: userData.chat_id,\n    userId: userData.id,\n    streak_current: actualStreakCurrent, // ← ИСПОЛЬЗУЕМ ПРОВЕРЕННЫЙ STREAK\n    streak_record: userData.streak_record || 0,\n    avgWords: avgWords,\n    avgWordsLast: userData.avg_word_count || 0,\n    completedTasks: completedTasks,\n    missedDays: missedDays,\n    bestPrompt: bestTask?.json.prompt_text || 'Нет выполненных заданий',\n    totalCompleted: userData.total_completed || 0\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1648
+      ],
+      "id": "b0cf9d99-7ada-41c4-a5df-38c8d027c8e1",
+      "name": "Calculate Metrics"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "streak_current": "={{ $json.streak_current }}",
+            "streak_record": "={{ $json.streak_record }}",
+            "last_activity_date": "={{ $json.last_activity_date }}",
+            "total_completed": "={{ $json.total_completed }}",
+            "id": "={{ $json.userId }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "active",
+                  "value": "active"
+                },
+                {
+                  "name": "stopped",
+                  "value": "stopped"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "registration_date",
+              "displayName": "registration_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Ideas",
+              "displayName": "Ideas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "streak_current",
+              "displayName": "streak_current",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "streak_record",
+              "displayName": "streak_record",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "avg_word_count",
+              "displayName": "avg_word_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "total_completed",
+              "displayName": "total_completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_activity_date",
+              "displayName": "last_activity_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1616,
+        512
+      ],
+      "id": "ad206849-1d45-4da2-8cfa-18ad6a37dfa5",
+      "name": "Update User Streak Total complite",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "edited_message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        224
+      ],
+      "id": "a7a0e050-4554-406a-bb9d-e1cbabb79d9d",
+      "name": "Telegram Trigger1",
+      "webhookId": "00dbc89c-8a38-4809-aa47-f8579c01c50c",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message !== undefined }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "22ae4a03-7ca4-4260-8db2-e2a68dfc42b8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "new message"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "22ff9fbc-a6fc-41c9-abf4-5d0cf5bf6516",
+                    "leftValue": "={{ $json.edited_message !== undefined }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "rerite"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        224
+      ],
+      "id": "0f9931f2-0099-4849-a826-3f55c4f352d8",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "claude-haiku-4-5-20251001"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=<role>\nТы — Беспощадный Главный Редактор. Твоя задача: проверить, является ли новое задание дубликатом или слишком похожим на задания из истории.\n</role>\n\n<input_to_verify>\nТема: {{ $json.content[0].text }}\n</input_to_verify>\n\n<verification_steps>\nДУБЛИКАТ, если выполнено ХОТЯ БЫ ОДНО:\n1. Совпадают 3+ ключевых слова (игнорируй \"10 способов\", \"идей\")\n2. Один и тот же контекст ситуации (например, \"конфликт с коллегой\" = \"конфликт с другом на работе\")\n3. Один домен + похожая формулировка (например, \"выжить в конфликте\" ≈ \"выйти из конфликта\")\n4. Разница только в одном слове (\"коллега\" → \"друг\", \"офис\" → \"кабинет\")\n\nНЕ ДУБЛИКАТ, если:\n- Разные домены (социум vs выживание vs психология)\n- Разные ситуации, даже если одна сфера\n- Принципиально разный угол (например, \"начать конфликт\" vs \"выйти из конфликта\")\n</verification_steps>\n\n<output_format>\nОтветь СТРОГО в JSON формате:\n{\n  \"is_duplicate\": true/false,\n  \"similarity_score\": 0-100,\n  \"reason\": \"краткое объяснение\",\n  \"similar_to\": \"формулировка из истории, если дубликат, иначе null\"\n}\n</output_format>"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 100,
+          "temperature": 0.8
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -208
+      ],
+      "id": "29b78e09-bc98-434c-aa54-c0a9523d2390",
+      "name": "критик",
+      "credentials": {
+        "anthropicApi": {
+          "id": "93TqQZRJ2982UQUY",
+          "name": "Anthropic Claude"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "claude-haiku-4-5-20251001"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=<role>\nТы — Мастер Социального Хакинга и Креативной Импровизации. Твоя специализация — находить выход из невозможных ситуаций и переизобретать социальные нормы. Твой тон: дерзкий, вдохновляющий, лаконичный.\n</role>\n\n<logic_parameters>\n- Уровень абстрактности: 9/10\n- Приоритет слоев: Социум, Выживание, Экономика, Психология, Социальный статус, Экономика без денег, Отношения (Мир предметов — в последнюю очередь)\n- Запрещенная формула: \"10 идей/способов, как использовать [ПРЕДМЕТ]\" — это признак низкой креативности.\n</logic_parameters>\n",
+              "role": "assistant"
+            },
+            {
+              "content": "=<task>\nСгенерируй ОДНУ тему для упражнения \"10 идей\". Задача — выйти за пределы материальных объектов и предложить ситуацию из реальной жизни, требующую социальной или интеллектуальной изворотливости.\n</task>\n\n<input_context>\nИстория последних заданий (ИХ НЕЛЬЗЯ ПОВТОРЯТЬ):\n{{ $json.history_text }}\n\n⚠️ ОБЯЗАТЕЛЬНО: Новое задание должно быть ПОЛНОСТЬЮ уникальным. Проверь каждое слово.\n</input_context>\n\n<instruction_logic>\nИспользуй следующий алгоритм ВНУТРЕННЕ (не выводи рассуждения в ответ):\n1. Проанализируй историю: извлеки ВСЕ темы заданий и ключевые слова\n2. Создай BLACK LIST: слова и концепты, которые УЖЕ были использованы\n3. Инъекция случайной идеи: выбери НОВЫЙ домен из библиотеки, который НЕ в истории\n4. Метод Контрастов: если история про \"карьеру\" → новая тема про \"ситуацию/процесс\"\n5. Финальная проверка: убедись, что новое задание НЕ содержит слов из BLACK LIST\n6. Убедись: задание НЕ строится вокруг конкретного предмета\n7. Многопарадигмальное рассуждение: сочетай психологию + социологию + выживание\n\n⚠️ КРИТИЧНО: Если финальное задание похоже на что-то из истории более чем на 50% — начни ЗАНОВО с шага 3.\n</instruction_logic>\n\n\n\n\n<domains_library>\n- Социальный статус: управление репутацией, влияние в группе \n- Информационное выживание: поиск правды, работа с данными без инструментов \n- Психологический хакинг: убеждение, эмпатия, когнитивные маневры \n- Алгоритмизация жизни: оптимизация рутины как программного кода \n- Кросс-культурные сдвиги: адаптация к нормам будущего или прошлого \n- Временная архитектура: управление восприятием времени, создание иллюзии срочности или спокойствия, манипуляции дедлайнами\n- Энергетический менеджмент: распределение физических и ментальных ресурсов, восстановление после burnout, балансировка нагрузки\n- Микро-власть: контроль через малые решения, формирование привычек окружения, незаметное влияние на процессы\n- Знаниевая инженерия: структурирование хаоса информации, создание систем памяти, экстернализация мышления\n- Социальная алхимия: трансформация конфликтов в возможности, превращение слабых связей в сильные, создание коалиций\n- Эмоциональная логистика: управление чувствами команды как ресурсом, предсказание эмоциональных состояний, профилактика кризисов\n- Контекстное программирование: адаптация коммуникации под ситуацию, переключение между регистрами речи, чтение подтекстов\n- Стратегическое невежество: выбор того, что НЕ знать, фильтрация шума, защита от информационной перегрузки\n- Ритуальный дизайн: создание смыслов через повторяемые действия, корпоративные традиции, закрепление ценностей\n- Метаигровое мышление: видение скрытых правил систем, эксплуатация лазеек в процессах, игра на уровень выше задачи\n- Нарративный контроль: формирование историй о событиях, переписывание прошлого, создание легенд\n- Селективная прозрачность: дозирование информации, стратегическая открытость, управление секретами\n- Якорение ожиданий: установка baseline для оценки результатов, манипуляция критериями успеха\n- Фреймовая война: борьба за определения, контроль терминологии, захват смыслов\n- Символическая власть: использование артефактов и ритуалов для укрепления позиций\n- Паттерн-хантинг: выявление повторяющихся структур в хаосе, предсказание через аналогии\n- Второпорядковое мышление: просчет последствий последствий, игра на 3+ хода вперед\n- Слепые зоны: картографирование того, что система не видит про себя\n- Точки невозврата: распознавание моментов необратимых изменений\n- Системная археология: раскопка причин текущего положения дел через историю решений\n- Лингвистическое айкидо: использование силы аргумента оппонента против него\n- Метакоммуникация: разговор о том, как мы разговариваем, рефрейминг самого процесса общения\n- Семантическая партизанщина: подрыв смыслов через точечные вопросы и уточнения\n- Молчание как инструмент: стратегическое невысказывание, power pause, тишина как давление\n- Эмоциональный джиу-джитсу: перенаправление агрессии в конструкти\n- Когнитивная гигиена: защита от токсичных мыслительных паттернов, mental detox\n- Энергетические долги: учет истощения как технического долга в коде жизни\n- Контекстное переключение: минимизация потерь при смене задач, создание режимов работы\n- Прокрастинационный дзен: использование откладывания как индикатора приоритетов\n- Микропривычки: инженерия поведения через атомарные действия\n- Групповая психофизика: измерение и изменение \"температуры\" команды\n- Конфликтная хореография: превращение столкновений в продуктивный танец\n- Культурный код: взлом и программирование неписаных правил команды\n- Социальный долг: накопление обязательств и доверия как капитала\n- Племенная дипломатия: навигация между субкультурами внутри организации\n- Обратный сценарий: планирование от будущего к настоящему, backcasting\n- Опционное мышление: создание альтернатив как хедж рисков\n- Стратегическая жертва: отказ от хорошего ради великого, killing darlings\n- Антихрупкость: дизайн систем, растущих от стресса\n- Временные горизонты: параллельная работа на разных масштабах времени\n- Туманная навигация: движение при нулевой видимости, sense-making в реальном времени\n- Калибровка интуиции: тренировка gut feeling через feedback loops\n- Ставки и апдейты: Байесовское обновление убеждений при новых данных\n- Разведка боем: получение информации через action, не analysis\n- Карта незнания: структурирование того, чего мы не знаем\n- Центры гравитации: обнаружение реальных источников власти в системе\n- Организационное трение: снижение потерь энергии в процессах\n- Точки рычага: малые действия с большим эффектом, архимедовы точки\n- Структурное насилие: как дизайн процессов создает проблемы\n- Институциональная память: сохранение и передача знаний организации\n- Рекомбинационное творчество: создание нового через необычные сочетания\n- Концептуальный блендинг: смешивание ментальных пространств\n- Латеральные прыжки: выход из колеи мышления через абсурд\n- Ограничения как муза: использование constraints для генерации идей\n- Инновационный arbitrage: перенос решений между контекстами\n- Игра в игру: осознанное изменение правил вместо игры по ним\n- Рефлексивные петли: использование саморефлексии как инструмента роста\n- Мета-обучение: learning how to learn, оптимизация процесса познания\n- Протоколирование себя: создание API собственной личности\n- Философская инженерия: разработка собственных принципов и ценностей\n</domains_library>\n\n\n<rules>\n- Максимум 15 слов.\n- Никаких скобок и пояснений.\n- Используй глаголы действия: \"выжить\", \"сдать\", \"отпраздновать\", \"убедить\", \"найти\", \"организовать\".\n- Конкретная, но не предметная ситуация\n- Не используй слова \"необычный\", \"креативный\", \"интересный\" — задание должно быть таким по сути, а не по названию.\n- Думай пошагово (Step-by-step): сначала выбери домен, затем сформулируй ситуацию, требующую изворотливости\n</rules>\n\n<few_shot_examples>\n✅ ПРАВИЛЬНО (Слои: Социум/Выживание/Лайфхаки):\n- \"10 способов сдать сложный экзамен, ни разу не открыв учебник\"\n- \"10 идей, как выжить в незнакомом городе, если телефон разрядился\"\n- \"10 способов роскошно отпраздновать день рождения, имея в кармане ноль рублей\"\n- \"10 идей, как познакомиться с интересным человеком в очереди в супермаркете\"\n- \"10 способов убедить начальника поднять зарплату, не используя аргумент про деньги\"\n\nНЕПРАВИЛЬНО (Предметный слой):\n- \"10 идей, как использовать старые носки\" (Слишком просто, мир вещей)\n- \"10 способов развлечь гостей предметами из кухни\" (Банально)\n- \"10 способов украсить комнату коробками\" (Повтор, мир вещей)\n</few_shot_examples>\n\n\n\n<output_format>\n⚠️ КРИТИЧЕСКИ ВАЖНО:\n- Выдай ТОЛЬКО финальное задание (одну строку текста)\n- БЕЗ заголовков \"Chain of Thought\", \"Анализ истории\" и т.п.\n- БЕЗ кавычек, нумерации, markdown-форматирования\n- БЕЗ объяснений \"почему выбрал этот домен\"\n\nПример правильного ответа:\n10 способов убедить начальника поднять зарплату, не используя аргумент про деньги\n\nНЕПРАВИЛЬНО (не делай так):\n# Внутренний аудит\n1. Анализ истории...\n</output_format>"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 100,
+          "temperature": 0.8
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        736,
+        -208
+      ],
+      "id": "a4aa8a62-1133-45c2-9810-32278d9fcc6c",
+      "name": "генератор",
+      "credentials": {
+        "anthropicApi": {
+          "id": "93TqQZRJ2982UQUY",
+          "name": "Anthropic Claude"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "filterByFormula": "={Users} = '{{ $json.id }}'\n\n",
+        "returnAll": false,
+        "limit": 20,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "date",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        384,
+        -128
+      ],
+      "id": "082249c5-3085-411d-91b4-5259e34f50ea",
+      "name": "Search last 20 ideas",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create or update a record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Search user1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or update a record": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Save idea",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search user": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "генератор",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Search last 20 ideas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search user1": {
+      "main": [
+        [
+          {
+            "node": "is replay to message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search last idea": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save update answear": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Search Ideas for This User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger 9:00": {
+      "main": [
+        [
+          {
+            "node": "Search user",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Search user2": {
+      "main": [
+        [
+          {
+            "node": "Search last completed idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search last completed idea": {
+      "main": [
+        [
+          {
+            "node": "Update answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update answer": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message2": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "is replay to message": {
+      "main": [
+        [
+          {
+            "node": "Search idea by reply text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Search last idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search idea by reply text": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Update User Streak Total complite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search All Active Users": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Analytics": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Sunday 8pm": {
+      "main": [
+        [
+          {
+            "node": "Search All Active Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update avg_word_count": {
+      "main": [
+        [
+          {
+            "node": "Send Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Ideas for This User": {
+      "main": [
+        [
+          {
+            "node": "Calculate Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Metrics": {
+      "main": [
+        [
+          {
+            "node": "Update avg_word_count",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update User Streak Total complite": {
+      "main": [
+        [
+          {
+            "node": "Save update answear",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Search user2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "генератор": {
+      "main": [
+        [
+          {
+            "node": "критик",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search last 20 ideas": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d6f0bd6d-dc3a-4f22-ba45-226851afb8cb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "21cf5f95a8892e39d85e8bf4e3f852fece0aea4764f927b87374b5c7d9469c12"
+  },
+  "id": "PjqrR9PAif8FGxu7",
+  "tags": [
+    {
+      "updatedAt": "2026-01-06T16:30:56.930Z",
+      "createdAt": "2026-01-06T16:30:56.930Z",
+      "id": "krcNnU9ec7cScb6X",
+      "name": "10 идей"
+    }
+  ]
+}

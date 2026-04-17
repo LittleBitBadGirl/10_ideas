@@ -1,0 +1,162 @@
+{
+  "name": "Broadcast Message",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "msg-001",
+              "name": "broadcast_message",
+              "value": "🎉 Спасибо, я наконец-то отладила (вроде) этого бота!\n\nТеперь всё должно работать как часы ⏰\n\nПриятного пользования! Не грустите и продолжайте генерировать креативные идеи каждый день! 💡\n\n---\n\n👋 Напоминаю, что вы здесь:\n\nКаждый день в 9:00 я присылаю вам новую тему для упражнения \"10 идей\". Это тренажер креативности от Джеймса Альтучера.\n\n🧠 Как это работает:\n— Первые 4-5 идей приходят легко\n— Следующие — с трудом\n— Последние 2 — это чистый креатив, когда мозг \"вспотел\" и начал работать по-настоящему\n\nПросто записывайте 10 идей на заданную тему. Не оценивайте их (\"плохая/хорошая\"), а просто записывайте!\n\nУдачи! 🚀",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-message-002",
+      "name": "Set Message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "filterByFormula": "{status}='active'",
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "get-users-003",
+      "name": "Get All Active Users",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [680, 300],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-batch-004",
+      "name": "Loop Over Users",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $('Set Message').item.json.broadcast_message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "send-message-005",
+      "name": "Send Message to User",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1120, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Message": {
+      "main": [
+        [
+          {
+            "node": "Get All Active Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Active Users": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Users": {
+      "main": [
+        null,
+        [
+          {
+            "node": "Send Message to User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Message to User": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": []
+}

@@ -1,0 +1,3328 @@
+{
+  "name": "Broadcast Message",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "Flow выдачи задания"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6528,
+        7120
+      ],
+      "typeVersion": 1,
+      "id": "1b839cdc-048c-4ba1-9146-d36c32289fa6",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Flow записи ответа пользователя\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6528,
+        7728
+      ],
+      "typeVersion": 1,
+      "id": "fe9932bd-eceb-46ed-954b-c2146b423a6a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Flow аналитика"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6496,
+        8304
+      ],
+      "typeVersion": 1,
+      "id": "f1f94a61-17c8-4491-b20c-069a9d8a1c5c",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Flow редактирования сообщения пользователем"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6992,
+        8016
+      ],
+      "typeVersion": 1,
+      "id": "b7204af5-371e-41d0-8848-af57075ae6d9",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        6848,
+        7152
+      ],
+      "id": "b52fb3a0-87e3-47cf-9b76-5713aa9ba2fc",
+      "name": "Daily Trigger 9AM",
+      "retryOnFail": false,
+      "executeOnce": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "filterByFormula": "={status}='active'",
+        "returnAll": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7520,
+        7248
+      ],
+      "id": "3ace8753-5d6d-40b0-955d-bb76314132c6",
+      "name": "Get All Active Users",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Список всех доменов для поиска\nconst DOMAINS = [\n'Социальная алхимия', 'Микро-власть', 'Информационное выживание',\n'Временная архитектура', 'Энергетический менеджмент', 'Психологический хакинг',\n'Знаниевая инженерия', 'Контекстное программирование', 'Нарративный контроль',\n'Метаигровое мышление', 'Эмоциональный джиу-джитсу', 'Туманная навигация',\n'Конфликтная хореография', 'Племенная дипломатия', 'Калибровка интуиции',\n'Стратегическое невежество', 'Селективная прозрачность', 'Опционное мышление',\n'Латеральные прыжки', 'Разведка боем'\n];\n\n// Собираем историю + домены\nconst history = items\n.map((item, index) => `${index + 1}. ${item.json.prompt_text}`)\n.filter(text => text && text.trim() !== '')\n.join('\\n');\n\n// Извлекаем домены из каждой идеи\nconst usedDomains = items.map(item => {\nconst text = item.json.prompt_text || '';\nreturn DOMAINS.find(d => text.includes(d));\n}).filter(Boolean);\n\n// Последние 5 доменов (для запрета)\nconst last5Domains = usedDomains.slice(-5);\n\n// Считаем использования каждого домена\nconst domainCount = {};\nDOMAINS.forEach(d => domainCount[d] = 0);\nusedDomains.forEach(d => domainCount[d] = (domainCount[d] || 0) + 1);\n\n// Сортируем домены по частоте использования (редкие первыми)\nconst sortedDomains = DOMAINS\n.map(d => ({ domain: d, count: domainCount[d] }))\n.sort((a, b) => a.count - b.count)\n.map(x => x.domain);\n\nreturn [{\njson: {\n history_text: history,\nhistory_count: items.length,\n used_domains: usedDomains,\nlast_5_domains: last5Domains,\n allowed_domains: sortedDomains.slice(0, 5), // Топ-5 наименее использованных\n domain_usage_count: domainCount,\nregeneration_count: 0\n }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8192,
+        7152
+      ],
+      "id": "4a60771f-2a87-48a7-a6d4-7ff330001523",
+      "name": "Format History for Prompt\""
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "claude-haiku-4-5-20251001"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=<role>\nТы — Беспощадный Главный Редактор. Твоя специализация — обнаружение дубликатов и семантически похожих заданий. Ты анализируешь не только слова, но и смысловые паттерны, домены и ситуационные контексты.\n</role>\n\n\n<first_attempt_pass>\nЕСЛИ regeneration_count = 0:\n- Будь МЕНЕЕ строгим\n- REJECT только если similarity_score ≥ 95\n- is_realistic: true если задание выполнимо (даже если сложное)\n</first_attempt_pass>\n\n<analysis_framework>\n\nПри проверке задания ты анализируешь:\n1. **Лексический слой**: совпадающие ключевые слова (игнорируй \"10 способов\", \"идей\")\n2. **Ситуационный слой**: контекст (работа/личное, конфликт/сотрудничество, выживание/процветание)\n3. **Доменный слой**: из какой библиотеки доменов взята тема\n4. **Угол атаки**: какой aspect проблемы раскрывается (начать/завершить, избежать/создать, скрыть/раскрыть)\n</analysis_framework>\n\n<verification_steps>\nREJECT (is_duplicate: true), если выполнено ХОТЯ БЫ ОДНО:\n\n**Критичные дубли (100% reject):**\n1. Совпадают 5+ УНИКАЛЬНЫХ ключевых существительных/глаголов (≥ 5 букв)\n   ИСКЛЮЧАЯ: способ, идея, команда, проект, работа, задание\n2. Идентичный контекст + одно слово изменено:\n   - \"конфликт с коллегой\" = \"конфликт с другом на работе\"\n   - \"офис\" = \"кабинет\" = \"рабочее место\"\n   - \"начальник\" = \"руководитель\" = \"босс\"\n3. Тот же домен + тот же глагол действия:\n   - \"выжить в конфликте\" ≈ \"выйти из конфликта\"\n   - \"убедить начальника\" ≈ \"переубедить босса\"\n\n**Подозрительные паттерны (90%+ similarity):**\n4. Инверсия той же ситуации:\n   - \"как начать конфликт\" vs \"как выйти из конфликта\" (один контекст)\n   - НО: \"как начать бизнес\" vs \"как закрыть токсичные отношения\" (РАЗНЫЕ контексты) → PASS\n5. Один домен повторяется 5+ раз подряд в истории:\n   - Если последние 7 заданий из \"Социальный статус\" → новое тоже оттуда → REJECT\n\n**PASS (уникально), если:**\n- Разные домены (социум vs информационное выживание vs психология)\n- Разные сферы жизни (работа vs семья vs публичное пространство)\n- Принципиально разный angle (создание vs разрушение, индивидуальное vs групповое)\n- Новая комбинация: домен из истории + ситуация, которой не было\n**Проверка реализма (ОБЯЗАТЕЛЬНО):**\n\n6. Задание содержит ДВА И БОЛЕЕ абсолютных ограничения одновременно:\n   - \"ни одного X И за 0 Y\" → REJECT\n   - ОДНО ограничение (гипербола) → PASS\n\n7. Можно ли придумать хотя бы 3 реалистичных ответа на это задание?\n   - Если НЕТ → REJECT\n</verification_steps>\n\n<history_analysis_protocol>\n1. Извлеки из истории:\n   - Все ключевые слова (существительные ≥ 4 букв, глаголы)\n   - Идентифицированные домены\n   - Повторяющиеся паттерны (какие темы встречались 2+ раза)\n2. Построй \"fingerprint\" нового задания:\n   - Ключевые слова\n   - Ситуационный контекст\n   - Предполагаемый домен\n3. Сравни fingerprint с историей:\n   - Есть ли задание с ≥ 50% совпадением fingerprint?\n   - Встречался ли этот домен в последних 5 заданиях?\n</history_analysis_protocol>\n",
+              "role": "assistant"
+            },
+            {
+              "content": "=<new_task>\nНовое задание:\n{{ $('AI generation new task').item.json.output }}\n</new_task>\n\n<history>\n{{ $('Format History for Prompt\"').item.json.history_text }}\n</history>\n\n<adaptive_threshold>\nТекущая попытка: {{ $('Check: First Gen or Regen?').item.json.regeneration_count }}\nПРАВИЛА АДАПТИВНОСТИ:\nПопытка 0: порог ≥ 95 → is_duplicate: true\n- Попытка 1: порог ≥ 92 → is_duplicate: true\n- Попытка 2: порог ≥ 85 → is_duplicate: true\n- Попытка 3+: автоматический PASS (is_duplicate: false, is_realistic: true)\n</adaptive_threshold>\n\n\n<instructions>                                     \n1. Проанализируй КАЖДОЕ задание из истории\n2. Найди ближайшее по смыслу (если есть)\n3. Оцени similarity_score (0-100):\n     - 90-100: почти идентично\n     - 80-89: очень похоже (разные слова, тот же смысл)\n     - 60-79: похожий домен, разные ситуации\n     - 0-59: уникально\n\n  4. Примени правила из <verification_steps> с учетом адаптивного порога\n  5. Верни JSON\n\n  ⚠️ ВАЖНО: Используй порог из <adaptive_threshold> на основе regeneration_count\n</instructions>\n\n\n<output_format>\nОтветь СТРОГО в JSON формате БЕЗ markdown блоков:\n\n{\n  \"is_duplicate\": true/false,\n  \"is_realistic\": true/false,\n  \"similarity_score\": 0-100,\n  \"reason\": \"1-2 предложения\",\n  \"similar_to\": \"текст из истории или null\",\n  \"domain_detected\": \"название домена\",\n  \"recommendation\": \"название другого домена или null\"\n}\n\nКРИТИЧЕСКИ ВАЖНО:\n- НЕ оборачивай в ```json```\n- reason — МАКСИМУМ 2 предложения\n- is_realistic — ВСЕГДА указывай (true/false)\n- Пиши КРАТКО\n</output_format>\n\n<realism_check>\nПроверяй реалистичность:\n- is_realistic: true — задание выполнимо реальным человеком\n- is_realistic: false — задание нереалистично (требует сверхспособностей, слишком абстрактно, невыполнимо)\n\nПримеры нереалистичных заданий:\n- \"10 способов телепортироваться\"\n- \"10 идей как стать невидимым\"\n- \"10 способов прочитать мысли\"\n</realism_check>\n\n<examples>\nПример REJECT:\n{\n  \"is_duplicate\": true,\n  \"similarity_score\": 85,\n  \"reason\": \"Совпадают ключевые слова 'конфликт', 'коллега', 'работа'. Тот же домен 'Социальная алхимия', только замена глагола 'выжить' → 'выйти'.\",\n  \"similar_to\": \"10 способов выжить в конфликте с коллегой, если вы работаете в одном кабинете\",\n  \"domain_detected\": \"Социальная алхимия\",\n  \"recommendation\": \"Попробуй 'Микро-власть' или 'Временная архитектура' — их давно не было\"\n}\n\nПример PASS:\n{\n  \"is_duplicate\": false,\n  \"similarity_score\": 35,\n  \"reason\": \"Новый домен 'Знаниевая инженерия'. Ситуация (управление информацией) не встречалась. Ближайшее — про конфликты (другая сфера).\",\n  \"similar_to\": null,\n  \"domain_detected\": \"Знаниевая инженерия\",\n  \"recommendation\": null\n}\n</examples>\n\n<brevity_rules>\n❌ ЗАПРЕЩЕНО писать развёрнутые объяснения\n✅ ПИШИ МАКСИМАЛЬНО КРАТКО\n\nПримеры:\n- НЕ ТАК: \"История заданий пуста. Новое задание уникально по своей природе — анализирует ситуацию 'видения проблемы в слепой организации'...\"\n- ТАК: \"История пуста. Задание уникально.\"\n\n- НЕ ТАК: \"Совпадают 4 ключевых слова: 'выжить', 'проект', 'команда', 'отрицают'\"\n- ТАК: \"4 совпадения: выжить, проект, команда\"\n</brevity_rules>"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 500,
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        8992,
+        6944
+      ],
+      "id": "6a99e69a-7f76-4a53-b5ee-6f533d98b229",
+      "name": "AI: Critic (Duplicate Check)",
+      "credentials": {
+        "anthropicApi": {
+          "id": "93TqQZRJ2982UQUY",
+          "name": "Anthropic Claude"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.is_realistic }}",
+                    "rightValue": "false",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    },
+                    "id": "c7f13527-e8a2-4d96-9dea-b438abe1fbae"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "(REJECT - нереалистично)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8aed1009-ce7e-4945-b976-5518680dea76",
+                    "leftValue": "={{ $json.is_duplicate === true }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "REJECT - дубликат"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "08c4fe65-d79d-4076-b599-af96f5ba7730",
+                    "leftValue": "={{ $json.is_duplicate === false }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "PASS"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        9568,
+        6928
+      ],
+      "id": "13fb31fb-1942-489e-980b-967952763094",
+      "name": "Route: PASS or REJECT?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем текст ответа от критика\nlet responseText = $input.item.json.content[0].text;  // ← ДОБАВИЛИ [0]\n\n// Убираем markdown обёртку если есть\nresponseText = responseText\n  .replace(/^```json\\n?/gm, '')\n  .replace(/\\n?```$/gm, '')\n  .trim();\n\n// Парсим JSON\nconst criticResponse = JSON.parse(responseText);\n\n// Возвращаем объект с распакованными полями\nreturn [{\n  json: {\n    ...($input.item.json),\n    is_duplicate: criticResponse.is_duplicate,\n    is_realistic: criticResponse.is_realistic !== undefined ? criticResponse.is_realistic : true,\n    similarity_score: criticResponse.similarity_score,\n    reason: criticResponse.reason,\n    similar_to: criticResponse.similar_to,\n    domain_detected: criticResponse.domain_detected,\n    recommendation: criticResponse.recommendation\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9344,
+        6944
+      ],
+      "id": "a7286cde-1cd3-46df-8a86-83bfcda59639",
+      "name": "Parse Critic JSON Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f10d905d-8660-4262-898b-0b297161a51b",
+              "name": "history_text",
+              "value": "={{ $json.history_text || $('Format History for Prompt\"').item.json.history_text }}",
+              "type": "string"
+            },
+            {
+              "id": "3eba78e9-21c2-4dbc-a310-5f14a23e5f72",
+              "name": "previous_attempt",
+              "value": "={{ ($json.regeneration_count || 0) + 1 }}",
+              "type": "string"
+            },
+            {
+              "id": "c888d8cc-b9df-405b-a19a-ffaa93084916",
+              "name": "rejection_reason",
+              "value": "={{ $('Parse Critic JSON Response').item.json.reason }}",
+              "type": "string"
+            },
+            {
+              "id": "13a5148b-211c-4fcb-a71f-5518280b1a0b",
+              "name": "similar_to",
+              "value": "={{ $('Parse Critic JSON Response').item.json.similarity_score }}",
+              "type": "string"
+            },
+            {
+              "id": "dce0325e-e120-4472-b827-6b8df3418e85",
+              "name": "recommended_domain",
+              "value": "={{ $('Parse Critic JSON Response').item.json.recommendation }}",
+              "type": "string"
+            },
+            {
+              "id": "a5a3d593-6757-44af-8666-17c7eb047538",
+              "name": "regeneration_count",
+              "value": "={{ ($('Check: First Gen or Regen?').item.json.regeneration_count || 0) + 1 }}",
+              "type": "number"
+            },
+            {
+              "id": "dca59061-e09a-47b1-85ef-d2738f36eebb",
+              "name": "blacklist_words",
+              "value": "=={{ (function() { const text = $('AI generation new task').item.json.output || ''; const stopWords = ['способ', 'идея', 'команда', 'проект', 'работа', 'задание']; return text.toLowerCase().\n       split(' ').filter(w => w.length > 4 && !stopWords.includes(w)).slice(0, 5).join(', '); })() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        9792,
+        7200
+      ],
+      "id": "484882eb-c2a6-4f8c-9524-f54c5739192a",
+      "name": "Prepare Regeneration Data"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.task_text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        10336,
+        6848
+      ],
+      "id": "879ae79d-e43c-45b4-9eb3-8b9a5f116296",
+      "name": "Send Idea to Users",
+      "webhookId": "205bfea0-0501-4e6e-846c-354f1bcc4c1a",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "edited_message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        6848,
+        7744
+      ],
+      "id": "9f108fa4-78ae-45a2-b37f-72497540ddc3",
+      "name": "Telegram Bot Trigger",
+      "webhookId": "00dbc89c-8a38-4809-aa47-f8579c01c50c",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message !== undefined }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "22ae4a03-7ca4-4260-8db2-e2a68dfc42b8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "new message"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "22ff9fbc-a6fc-41c9-abf4-5d0cf5bf6516",
+                    "leftValue": "={{ $json.edited_message !== undefined }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "rerite"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        7072,
+        7744
+      ],
+      "id": "f1aa0b3c-f31b-4a1d-8822-b77b440cb0b4",
+      "name": "Route: New Message or Edit?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9907cdbd-225c-4f92-9dcf-729e8e889ab9",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/start",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        7296,
+        7648
+      ],
+      "id": "08e109e9-8f98-4a51-95d5-0e3594f17c9e",
+      "name": "Check: Is /start Command?"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "active",
+            "username": "={{ $json.message.chat.username }}",
+            "chat_id": "={{ $json.message.chat.id }}",
+            "registration_date": "={{ DateTime.fromSeconds($json.message.date).toISO() }}",
+            "first_name": "={{ $json.message.chat.first_name }}"
+          },
+          "matchingColumns": [
+            "chat_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "active",
+                  "value": "active"
+                },
+                {
+                  "name": "stopped",
+                  "value": "stopped"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "registration_date",
+              "displayName": "registration_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ideas",
+              "displayName": "Ideas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7520,
+        7552
+      ],
+      "id": "2e607425-6d6b-40bf-b5ad-45c0dc50aec9",
+      "name": "Register/Update User",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Bot Trigger').item.json.message.from.id }}",
+        "text": "Привет! 👋 Добро пожаловать в тренажёр креативности «10 идей»!\n\n🧠 ЧТО ЭТО?\n Метод Джеймса Альтучера: каждый день придумывай 10 идей на одну тему. Это как спортзал для мозга — первые идеи лёгкие, последние 2-3 настоящие сокровища.\n\n 📅 КАК ЭТО РАБОТАЕТ?\n• Каждый день в 9:00 присылаю новую тему\n• Твоя задача — написать 10 идей в ответ\n• Не фильтруй и не оценивай — пусть льётся поток\n• Можно редактировать ответ, если передумал или отвлекли\n\n 🎯 ПРАВИЛА:\n1. Пиши все 10 идей, даже безумные\n2. Не суди идеи в процессе — потом разберёшься\n3. Если пропустил день — не страшно, продолжай дальше\n\n💡 СОВЕТ:\n Самые ценные идеи приходят после 7-й. Не сдавайся раньше!\n \nГотов? Первое задание жди в 9:00! 🚀\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        7744,
+        7552
+      ],
+      "id": "17eeee2a-b4b6-4081-b2b2-32d96048861e",
+      "name": "Send Welcome Message",
+      "webhookId": "205bfea0-0501-4e6e-846c-354f1bcc4c1a",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "filterByFormula": "={chat_id} = {{ $json.message.chat.id }}",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7520,
+        7744
+      ],
+      "id": "ddacf5e3-a4a8-4be2-b2c3-894dd634c1f5",
+      "name": "Find User by Chat ID",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b56895e4-1e14-49b6-bbf4-29679acf78ac",
+              "leftValue": "={{ $('Telegram Bot Trigger').first().json.message.reply_to_message.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        7744,
+        7744
+      ],
+      "id": "68faa1f4-9e72-48f5-bda4-87a824b0647b",
+      "name": "Check: Is Reply to Bot"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "filterByFormula": "=AND(\n  FIND('{{ $('Find User by Chat ID').first().json.id }}', {Users}) > 0,\n  {prompt_text} = '{{ $('Telegram Bot Trigger').item.json.message.reply_to_message.text }}'\n)",
+        "returnAll": false,
+        "limit": 1,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "ID",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7968,
+        7648
+      ],
+      "id": "f98f9c33-7464-4c62-9fe0-df1fe29baa04",
+      "name": "Find Idea by Prompt Text",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "filterByFormula": "=AND(FIND('{{ $json.id }}', {Users}) > 0, {status}='pending')",
+        "returnAll": false,
+        "limit": 1,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "ID",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7968,
+        7840
+      ],
+      "id": "56b695f4-580a-4e7e-9b88-ee7fc5034350",
+      "name": "Find Last Pending Idea",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "done",
+            "user_answer": "={{ $('Telegram Bot Trigger').item.json.message.text }}",
+            "id": "={{ $('Find Last Pending Idea').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "prompt_text",
+              "displayName": "prompt_text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_answer",
+              "displayName": "user_answer",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ideas_count",
+              "displayName": "ideas_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "pending",
+                  "value": "pending"
+                },
+                {
+                  "name": "done",
+                  "value": "done"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Users",
+              "displayName": "Users",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        8640,
+        7744
+      ],
+      "id": "e9c5a7ad-e162-4b74-9fb0-9d7de1d74436",
+      "name": "Save User Answer",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const today = new Date().toISOString().split('T')[0];\nconst userData = $('Find User by Chat ID').first().json;\nconst lastActivity = userData.last_activity_date;\nconst currentStreak = userData.streak_current || 0;\nconst recordStreak = userData.streak_record || 0;\nconst currentTotal = userData.total_completed || 0;\n\nlet newStreak = 1;\n\nif (lastActivity) {\n  const lastDate = new Date(lastActivity);\n  const todayDate = new Date(today);\n  const diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));\n  \n  if (diffDays === 0) {\n    newStreak = currentStreak;\n  } else if (diffDays === 1) {\n    newStreak = currentStreak + 1;\n  } else {\n    newStreak = 1;\n  }\n} else {\n  newStreak = 1;\n}\n\nconst newRecord = Math.max(newStreak, recordStreak);\nconst newTotal = currentTotal + 1;\n\n// ОДИН return со ВСЕМИ данными\nreturn [{\n  json: {\n    userId: userData.id,\n    streak_current: newStreak,\n    streak_record: newRecord,\n    last_activity_date: today,\n    total_completed: newTotal\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8192,
+        7744
+      ],
+      "id": "4ac065e9-87a0-499b-9cf0-6e3222bd1b95",
+      "name": "Calculate Streak & Stats"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "streak_current": "={{ $json.streak_current }}",
+            "streak_record": "={{ $json.streak_record }}",
+            "last_activity_date": "={{ $json.last_activity_date }}",
+            "total_completed": "={{ $json.total_completed }}",
+            "id": "={{ $json.userId }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "active",
+                  "value": "active"
+                },
+                {
+                  "name": "stopped",
+                  "value": "stopped"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "registration_date",
+              "displayName": "registration_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Ideas",
+              "displayName": "Ideas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "streak_current",
+              "displayName": "streak_current",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "streak_record",
+              "displayName": "streak_record",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "avg_word_count",
+              "displayName": "avg_word_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "total_completed",
+              "displayName": "total_completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_activity_date",
+              "displayName": "last_activity_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        8416,
+        7744
+      ],
+      "id": "ec25aeab-65d0-423b-8e08-9922fe7854b4",
+      "name": "Update User Stats",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 15 вариантов ответов на добавление идеи\nconst responses = [\n  \"Записал ✓\",\n  \"Готово ✓\",\n  \"Принял 👌\",\n  \"Сохранил\",\n  \"Записал. До завтра!\",\n  \"Принял. Увидимся завтра 👋\",\n  \"Кайф, до завтра! \",\n  \"Сохранил. Завтра снова увидимся\",\n  \"Круто. Завтра ещё поупражняемся\",\n  \"Записал. До завтра 🚀\",\n  \"Принято. До встречи!\",\n  \"Зафиксировал ✓\",\n  \"Готово. Завтра жду новых идей\",\n  \"Сохранил. До скорого!\"\n];\n\n// Выбираем случайный ответ\nconst randomResponse = responses[Math.floor(Math.random() * responses.length)];\n\nreturn [{\n  json: {\n    message: randomResponse\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8864,
+        7744
+      ],
+      "id": "b57be122-62e9-4f25-94cd-09d6fa8e3b0e",
+      "name": "Random Thank You Message"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Bot Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        9088,
+        7744
+      ],
+      "id": "bab87006-744b-4d39-8344-ac0226b9ee84",
+      "name": "Send Thank You",
+      "webhookId": "205bfea0-0501-4e6e-846c-354f1bcc4c1a",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtHour": 20
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        6848,
+        8320
+      ],
+      "id": "a7eb7d05-f7e6-4203-87c6-15f7d82e5fd3",
+      "name": "Weekly Analytics Trigger",
+      "retryOnFail": false,
+      "executeOnce": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "filterByFormula": "{status} = 'active'",
+        "returnAll": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7072,
+        8320
+      ],
+      "id": "23a59e65-9278-4719-8636-25a5e9eac984",
+      "name": "Get All Active Users1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        7296,
+        8320
+      ],
+      "id": "6ff9812b-e6cb-4105-be5d-cad99e1481dc",
+      "name": "Loop: Calc Stats per User"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "filterByFormula": "=AND(   FIND('{{ $json.id }}', {Users}) > 0,   {Created} > DATEADD(NOW(), -7, 'days') )",
+        "returnAll": false,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "Created",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7520,
+        8256
+      ],
+      "id": "80784300-608e-49ce-9095-e07ceb0b71eb",
+      "name": "Get User's Ideas (7 days)",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const ideas = $('Get User's Ideas (7 days)').all();\nconst userData = $('Get All Active Users1').item.json;\n\n// Проверяем, не сломана ли серия\nconst today = new Date();\nconst lastActivity = userData.last_activity_date;\nlet actualStreakCurrent = userData.streak_current || 0;\n\nif (lastActivity) {\n  const lastDate = new Date(lastActivity);\n  const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));\n  \n  if (diffDays > 1) {\n    actualStreakCurrent = 0; // Серия сломана\n  }\n}\n\n// Считаем метрики\nconst doneIdeas = ideas.filter(i => i.json.status === 'done');\nconst completedTasks = doneIdeas.length;\nconst totalWords = doneIdeas.reduce((sum, i) => {\n  const text = i.json.user_answer || '';\n  return sum + text.split(/\\s+/).length;\n}, 0);\n\nconst avgWords = completedTasks > 0 ? Math.round(totalWords / completedTasks) : 0;\nconst missedDays = 7 - completedTasks;\n\n// Лучшее задание\nconst bestTask = doneIdeas.sort((a, b) => \n  (b.json.user_answer?.length || 0) - (a.json.user_answer?.length || 0)\n)[0];\n\nreturn [{\n  json: {\n    chat_id: userData.chat_id,\n    userId: userData.id,\n    streak_current: actualStreakCurrent, // ← ИСПОЛЬЗУЕМ ПРОВЕРЕННЫЙ STREAK\n    streak_record: userData.streak_record || 0,\n    avgWords: avgWords,\n    avgWordsLast: userData.avg_word_count || 0,\n    completedTasks: completedTasks,\n    missedDays: missedDays,\n    bestPrompt: bestTask?.json.prompt_text || 'Нет выполненных заданий',\n    totalCompleted: userData.total_completed || 0\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7744,
+        8256
+      ],
+      "id": "803fd73c-6719-4f18-95d8-abada71dabd3",
+      "name": "Calculate Week Stats"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.userId }}",
+            "avg_word_count": "={{ $json.avgWords }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "active",
+                  "value": "active"
+                },
+                {
+                  "name": "stopped",
+                  "value": "stopped"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "registration_date",
+              "displayName": "registration_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Ideas",
+              "displayName": "Ideas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "streak_current",
+              "displayName": "streak_current",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "streak_record",
+              "displayName": "streak_record",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "avg_word_count",
+              "displayName": "avg_word_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "total_completed",
+              "displayName": "total_completed",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_activity_date",
+              "displayName": "last_activity_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7968,
+        8256
+      ],
+      "id": "f50a0cef-4f4c-4e15-b772-fc5b42929baf",
+      "name": "Save Avg Word Count",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.fields.chat_id }}",
+        "text": "=📊 Твоя статистика за неделю:\n\n🔥 СЕРИЯ: {{ $('Calculate Week Stats').item.json.streak_current }} дней подряд!\nТвой рекорд: {{ $('Calculate Week Stats').item.json.streak_record }} дней.\n\n📈 СРЕДНЯЯ ДЛИНА ОТВЕТОВ:\nЭта неделя: {{ $('Calculate Week Stats').item.json.avgWords }} слов\nПрошлый период: {{ $('Calculate Week Stats').item.json.avgWordsLast }} слов\n\n✅ ВЫПОЛНЕНО: {{ $('Calculate Week Stats').item.json.completedTasks }} из 7 заданий\n⚠️ ПРОПУЩЕНО: {{ $('Calculate Week Stats').item.json.missedDays }} дней\n\n🏆 ЛУЧШЕЕ ЗАДАНИЕ:\n\"{{ $('Calculate Week Stats').item.json.bestPrompt }}\"\n\n💯 ЗА ВСЮ ИСТОРИЮ: {{ $('Calculate Week Stats').item.json.totalCompleted }} заданий!\n\nПродолжай в том же духе! 🚀\n\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        8192,
+        8320
+      ],
+      "id": "9d1d9037-fd41-4380-aaf0-e369140500dd",
+      "name": "Send Weekly Report",
+      "webhookId": "0e715af7-7e55-4704-b9c5-2a6031f1afbb",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "filterByFormula": "={chat_id} ={{ $json.edited_message.chat.id }}",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7296,
+        8032
+      ],
+      "id": "cf6e186c-9dc8-4cb6-8dcd-5133e7c7f05e",
+      "name": "Find User (Edited Message)",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "filterByFormula": "=AND(FIND('{{ $('Find User (Edited Message)').first().json.id }}', {Users}) > 0, {status}='done')",
+        "returnAll": false,
+        "limit": 1,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "ID",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7520,
+        8032
+      ],
+      "id": "fb729c40-dbdd-4101-b00f-df97bb81d1cd",
+      "name": "Find Last Done Idea",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_answer": "={{ $('Telegram Bot Trigger').item.json.edited_message.text }}",
+            "id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "prompt_text",
+              "displayName": "prompt_text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_answer",
+              "displayName": "user_answer",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ideas_count",
+              "displayName": "ideas_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "pending",
+                  "value": "pending"
+                },
+                {
+                  "name": "done",
+                  "value": "done"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Users",
+              "displayName": "Users",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Created",
+              "displayName": "Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7744,
+        8032
+      ],
+      "id": "e6f6763c-5586-4efd-9504-3bf139134117",
+      "name": "Update User Answer",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.edited_message.from.id }}",
+        "text": "Спасибо за уточнение",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        7968,
+        8032
+      ],
+      "id": "94cf8896-cc9f-4df6-9004-3f1c82f672b2",
+      "name": "Confirm Edit Received",
+      "webhookId": "205bfea0-0501-4e6e-846c-354f1bcc4c1a",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {
+          "frequencyPenalty": 0.4,
+          "maxTokens": 100,
+          "presencePenalty": 0.3,
+          "temperature": 1,
+          "timeout": 30000,
+          "maxRetries": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        8720,
+        6864
+      ],
+      "id": "359d03b3-aca7-4f0b-aedc-ad6dfa099647",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "uYytZKMC3oyjPI90",
+          "name": "DeepSeek account 55"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "frequencyPenalty": 0.5,
+          "maxTokens": 100,
+          "presencePenalty": 0.4,
+          "temperature": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        8720,
+        7376
+      ],
+      "id": "333f1d13-a66d-4fe1-935d-489930f56928",
+      "name": "DeepSeek Chat Model1",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "uYytZKMC3oyjPI90",
+          "name": "DeepSeek account 55"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ты — Мастер Социального Хакинга. Твоя задача — генерировать провокационные задания для упражнения \"10 идей\".                                                                                            \n\n  ПРАВИЛА:\n  1. Максимум 15 слов\n  2. Глаголы действия: выжить, сдать, убедить, найти, организовать, создать, защитить, восстановить, предсказать, оптимизировать\n  3. БЕЗ предметов (\"старые носки\", \"коробки\") — только СИТУАЦИИ\n  4. Ограничения должны быть РЕАЛИСТИЧНЫМИ или умеренной ГИПЕРБОЛОЙ\n     (например: \"с минимальным бюджетом\" или \"имея в кармане ноль рублей\" - ОК)\n     Избегай ДВОЙНЫХ абсолютных ограничений (\"ни одного слова И за 0 рублей\")\n  5. Выдай ОДНУ строку текста БЕЗ кавычек, форматирования, объяснений\n\n  ИСТОРИЯ (не повторяй это):\n  {{ $json.history_text }}\n\n⛔ ДОМЕНЫ ИЗ ПОСЛЕДНИХ 5 ЗАДАНИЙ (НЕ ИСПОЛЬЗОВАТЬ):\n{{ $('Format History for Prompt\"').item.json.last_5_domains.join(', ') }}\n\n✅ НАИМЕНЕЕ ИСПОЛЬЗОВАННЫЕ ДОМЕНЫ (приоритет):\n{{ $('Format History for Prompt\"').item.json.allowed_domains.join(', ') }}\n\n  ОБЯЗАТЕЛЬНЫЙ АЛГОРИТМ:\n\n  ШАГ 1: АНАЛИЗ ИСТОРИИ\n  - Извлеки ВСЕ глаголы из истории (выжить, убедить, найти и т.д.)\n  - Извлеки ключевые существительные (команда, проект, конфликт и т.д.)\n  - Определи домены, которые уже встречались в последних 5 заданиях\n\n  ШАГ 2: ВЫБЕРИ НОВЫЙ ДОМЕН\n  - Выбери домен из списка ниже, который НЕ встречался в последних 5 заданиях\n  - Если все домены были использованы - выбери тот, который встречался реже всего\n\n  ШАГ 3: СОЗДАЙ ЗАДАНИЕ\n  - Используй глагол, которого НЕТ в последних 3 заданиях\n  - Используй контекст, отличный от последних 3 заданий (если было про работу → теперь про личное, если было про конфликт → теперь про сотрудничество)\n  - Убедись, что можно придумать минимум 5 реалистичных ответов за 2 минуты\n\n  ТОП-20 ДОМЕНОВ (выбери один, которого НЕТ в истории):\n  - Социальная алхимия: превращение конфликтов в возможности\n  - Микро-власть: незаметное влияние через малые решения\n  - Информационное выживание: поиск правды без инструментов\n  - Временная архитектура: манипуляция восприятием времени\n  - Энергетический менеджмент: управление burnout и ресурсами\n  - Психологический хакинг: убеждение без аргументов\n  - Знаниевая инженерия: структурирование хаоса информации\n  - Контекстное программирование: переключение регистров общения\n  - Нарративный контроль: переписывание историй событий\n  - Метаигровое мышление: эксплуатация лазеек в системах\n  - Эмоциональный джиу-джитсу: перенаправление агрессии\n  - Туманная навигация: движение при нулевой видимости\n  - Конфликтная хореография: превращение столкновений в танец\n  - Племенная дипломатия: навигация между субкультурами\n  - Калибровка интуиции: тренировка gut feeling\n  - Стратегическое невежество: выбор что НЕ знать\n  - Селективная прозрачность: дозирование информации\n  - Опционное мышление: создание альтернатив как хедж\n  - Латеральные прыжки: выход из колеи через абсурд\n  - Разведка боем: получение информации через action\n\n  ПРИМЕРЫ СИЛЬНЫХ ЗАДАНИЙ:\n  ✅ 10 способов выжить на новом месте работы, если тебя наняли по ошибке\n  ✅ 10 идей как убедить инвестора без презентации и цифр\n  ✅ 10 способов восстановить репутацию после публичного провала на сцене\n  ✅ 10 идей найти союзников в команде, где все против твоего проекта\n  ✅ 10 способов успокоить панику в офисе при внезапном кризисе\n\n  ❌ ПЛОХО:\n  - \"10 идей с носками\" (предмет)\n  - \"выстроить доверие\" (повтор глагола из истории)\n\n  ФИНАЛЬНАЯ ПРОВЕРКА:\n  - Есть ли совпадающие глаголы с последними 3 заданиями? → выбери другой глагол\n  - Похож ли контекст на последние 3 задания? → выбери другой контекст\n  - Можно придумать 5 ответов за 2 мин? → если НЕТ, упрости ограничения\n  - Задание про ПРЕДМЕТ? → начни заново с другого домена\n\n  Выдай ТОЛЬКО финальную строку          ",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        8640,
+        6640
+      ],
+      "id": "fd71a768-f7c6-456b-a19f-ac6973da409d",
+      "name": "AI generation new task"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=<role>\nТы — Мастер Социального Хакинга и Креативной Импровизации. Твоя специализация — находить \n         выход из невозможных ситуаций и переизобретать социальные нормы. Твой тон: дерзкий, \n         вдохновляющий, лаконичный.\n</role>\n\n⚠️ ЭТО ПОПЫТКА РЕГЕНЕРАЦИИ №{{$json.regeneration_count }} (из 3)\nЕСЛИ попытка 3 → используй ЛЮБОЙ домен из allowed_domains, даже если есть \n         ограничения\n  \n<logic_parameters>\n- Уровень абстрактности: 9/10\n- Приоритет слоев: Социум, Выживание, Экономика, Психология, Социальный статус, Экономика\n         без денег, Отношения (Мир предметов — в последнюю очередь)\n - Запрещенная формула: \"10 идей/способов, как использовать [ПРЕДМЕТ]\" — это признак \n         низкой креативности.\n </logic_parameters>\n\n <task>\nСгенерируй ОДНУ тему для упражнения \"10 идей\". Задача — выйти за пределы материальных \n         объектов и предложить ситуацию из реальной жизни, требующую социальной или \n         интеллектуальной изворотливости.\n</task>\n\n <critical_context>\n ⚠️ ОТКЛОНЕННАЯ ПОПЫТКА:\n \"{{ $json.previous_attempt }}\"\n\n ДИАГНОЗ КРИТИКА:\n - Причина: {{ $json.rejection_reason }}\n- Similarity Score: {{ $json.similar_to }}\n- Обнаруженный домен: {{ $('Parse Critic JSON Response').item.json.domain_detected }}\n\n 🎯 РЕКОМЕНДАЦИЯ КРИТИКА:\n {{ $json.recommended_domain }}\n\n ⛔ КЛЮЧЕВЫЕ СЛОВА ИЗ ОТКЛОНЕННОГО (избегай их):\n {{ $json.blacklist_words }}\n  </critical_context>\n\n <instruction_logic>\n ОБЯЗАТЕЛЬНЫЙ АЛГОРИТМ (выполняй СТРОГО ПО ПОРЯДКУ):\n\nШАГ 1: ПРОАНАЛИЗИРУЙ РЕКОМЕНДАЦИЮ КРИТИКА\n- Рекомендация: \"{{ $json.recommended_domain }}\"\n - Это НЕ домен, а ПОДСКАЗКА направления\n - Извлеки из рекомендации ТЕМУ (например: \"мотивация команды\", \"срочный проект\")\n \n ШАГ 2: ВЫБЕРИ ДОМЕН ИЗ БИБЛИОТЕКИ\n - Используй {{ $('Prepare Regeneration Data').item.json.least_used_domains }}\n- Выбери домен, который соответствует теме из рекомендации\n- Если рекомендация не подходит под домены — выбери наименее использованный\n ШАГ 3: СОЗДАЙ ЗАДАНИЕ\n - Используй выбранный домен как основу\n - НЕ используй слова из blacklist_words\n - Контекст должен отличаться от отклоненного (работа→личное, конфликт→сотрудничество)\n\n ШАГ 4: ФИНАЛЬНАЯ ПРОВЕРКА\n - Совпадений с blacklist: 0-1 → ОК\n   - Можно придумать 5 ответов → ОК\n </instruction_logic>\n\n \n<rotation_mechanism>\nОБЯЗАТЕЛЬНАЯ РОТАЦИЯ ДОМЕНОВ:\n1. Если отклонённое задание из домена X → НЕ ИСПОЛЬЗОВАТЬ X\n 2. Выбери домен из: {{ $('Calculate Domain Priority').item.json.least_used_domains }}\n3. Если домен из рекомендации уже был в истории → выбери другой из наименее \n         использованных\n</rotation_mechanism>\n\n<domains_library>\n - Социальная алхимия: превращение конфликтов в возможности\n - Микро-власть: незаметное влияние через малые решения\n - Информационное выживание: поиск правды без инструментов\n- Временная архитектура: манипуляция восприятием времени\n- Энергетический менеджмент: управление burnout и ресурсами\n- Психологический хакинг: убеждение без аргументов\n - Знаниевая инженерия: структурирование хаоса информации\n- Контекстное программирование: переключение регистров общения\n- Нарративный контроль: переписывание историй событий\n- Метаигровое мышление: эксплуатация лазеек в системах\n- Эмоциональный джиу-джитсу: перенаправление агрессии\n- Туманная навигация: движение при нулевой видимости\n - Конфликтная хореография: превращение столкновений в танец\n- Племенная дипломатия: навигация между субкультурами\n- Калибровка интуиции: тренировка gut feeling\n - Стратегическое невежество: выбор что НЕ знать\n- Селективная прозрачность: дозирование информации\n- Опционное мышление: создание альтернатив как хедж\n- Латеральные прыжки: выход из колеи через абсурд\n- Разведка боем: получение информации через action\n\n</domains_library>\n\n<rules>\n- Максимум 15 слов\n- Никаких скобок и пояснений\n- Конкретная, но не предметная ситуация\n - Не используй слова \"необычный\", \"креативный\", \"интересный\"\n- НЕ ИСПОЛЬЗУЙ слова из: {{ $json.blacklist_words }}\n- Следуй рекомендации критика: {{ $json.recommended_domain }}\n- Выбери домен из наименее использованных: {{ $('Calculate Domain Priority').item.json.\n         least_used_domains }}\n\n</rules>\n\n <few_shot_examples>\n ✅ ПРАВИЛЬНО (разные домены):\n - \"10 способов сдать сложный экзамен, ни разу не открыв учебник\" (Знаниевая инженерия)\n - \"10 идей, как выжить в незнакомом городе, если телефон разрядился\" (Информационное \n         выживание)\n- \"10 способов роскошно отпраздновать день рождения, имея в кармане ноль рублей\" \n         (Ресурсная оптимизация)\n- \"10 способов восстановить репутацию после публичной ошибки\" (Социальный статус)\n- \"10 идей защитить личное время от постоянных срочных задач\" (Временная архитектура)\n\n ❌ НЕПРАВИЛЬНО:\n  - Любое задание с предметами\n  - Повторение глаголов из истории\n - Использование домена из отклоненной попытки\n\n</few_shot_examples>\n\n <output_format>\n ⚠️ ВЫДАЙ ТОЛЬКО ФИНАЛЬНОЕ ЗАДАНИЕ:\n - Одна строка текста\n - БЕЗ рассуждений, анализа, заголовков\n - БЕЗ кавычек, нумерации, форматирования\n - БЕЗ упоминания домена\n\n Пример:\n10 способов восстановить концентрацию после серии прерываний\n </output_format>\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        8640,
+        7152
+      ],
+      "id": "0fd4eaaf-f084-44c6-b2eb-d42402a3d6f6",
+      "name": "AI regeneration"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "filterByFormula": "=FIND('recRkMS6uQsIN0nFs', {Users}) > 0",
+        "returnAll": false,
+        "limit": 10,
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "date",
+              "direction": "desc"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7968,
+        7152
+      ],
+      "id": "32e1421a-c233-41e4-b4c8-3b77ca51934d",
+      "name": "Get History (Last 10 Ideas)",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const taskText = $('AI generation new task').first().json.output || \n $('AI regeneration').first().json.output;\n\nconst users = $('Merge').all();\n\nreturn users.map(user => {\nreturn {\n  json: {\n id: user.json.id,\n  chat_id: user.json.chat_id,\n      task_text: taskText\n    }\n  };\n });\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        9792,
+        6848
+      ],
+      "id": "b69fa2ae-83dd-435b-b561-2502913435a6",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "31eb002b-e7af-49c0-9b1d-177a63f3289b",
+              "name": "TEST_MODE",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        7072,
+        7152
+      ],
+      "id": "95a5c3c3-7203-4d17-9426-f306e6cd5f5b",
+      "name": "Set Test Mode"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.error }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "empty",
+                      "singleValue": true
+                    },
+                    "id": "39271151-3beb-4ff9-be18-6498354cda29"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Save Idea"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5612e609-e474-4fb4-94c8-cec8df29ae8b",
+                    "leftValue": "={{ $json.error }}",
+                    "rightValue": "false ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Mark User as Stopped"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        10560,
+        6848
+      ],
+      "id": "cfa99d5e-e8dc-4078-866a-62b9a800f420",
+      "name": "Switch",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "filterByFormula": "={chat_id}='163394712'",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7520,
+        7056
+      ],
+      "id": "018d5de9-4a8d-405a-b2d0-fc46190670d3",
+      "name": "Get only me",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e5ce0026-9f5d-4826-8e31-5494b9f7f24b",
+              "leftValue": "={{ $json.previous_attempt === undefined || $json.previous_attempt === '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        8416,
+        7152
+      ],
+      "id": "7cf5bff2-4f98-4fc2-9ed1-ab39251294c2",
+      "name": "Check: First Gen or Regen?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        7744,
+        7152
+      ],
+      "id": "f02747a1-a6c2-4d9d-ba4d-c1eef79290ae",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.TEST_MODE }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f91e79a6-e062-40db-8a7c-9852b2a4d5d0"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "test"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "08dcb4f0-ab3e-4a54-bd17-e8342d77eaf7",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "production"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        7296,
+        7152
+      ],
+      "id": "917f2d87-e97c-4906-8c14-bf0b4e543e1f",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "jsCode": " const DOMAINS = {\n'Социальная алхимия': ['конфликт', 'отношения', 'враг', 'союзник', 'предатель', \n        'авторитет', 'репутация'],\n'Микро-власть': ['влияние', 'власть', 'контроль', 'манипуляция', 'убедить', 'давление'],\n'Информационное выживание': ['информация', 'правда', 'поиск', 'данные', 'слух', \n        'новости'],\n'Временная архитектура': ['время', 'срок', 'дедлайн', 'опоздание', 'наверстать', 'тайм'\n        ],\n 'Энергетический менеджмент': ['энергия', 'burnout', 'выгорание', 'ресурс', 'усталость', \n        'отдых'],\n 'Психологический хакинг': ['психология', 'убеждение', 'мотивация', 'триггер', 'реакция'\n        ],\n 'Знаниевая инженерия': ['знание', 'экзамен', 'учеба', 'структура', 'система', \n        'понимание'],\n 'Контекстное программирование': ['контекст', 'общение', 'разговор', 'диалог', 'регистр'\n        ],\n  'Нарративный контроль': ['история', 'нарратив', 'сценарий', 'роль', 'сюжет'],\n'Метаигровое мышление': ['правила', 'система', 'лазейка', 'эксплуатация', 'фрейм'],\n 'Эмоциональный джиу-джитсу': ['эмоция', 'агрессия', 'гнев', 'страх', 'перенаправление'],\n 'Туманная навигация': ['неизвестность', 'туман', 'видимость', 'ориентир', 'путь'],\n 'Конфликтная хореография': ['столкновение', 'танец', 'движение', 'конфронтация'],\n 'Племенная дипломатия': ['субкультура', 'племя', 'группа', 'принадлежность', 'круг'],\n 'Калибровка интуиции': ['интуиция', 'чутьё', 'gut feeling', 'предчувствие'],\n 'Стратегическое невежество': ['незнание', 'игнор', 'выбор', 'фокус'],\n 'Селективная прозрачность': ['прозрачность', 'дозирование', 'открытость', 'секрет'],\n 'Опционное мышление': ['альтернатива', 'вариант', 'выбор', 'хедж', 'план б'],\n 'Латеральные прыжки': ['абсурд', 'креатив', 'выход', 'колея', 'нестандарт'],\n  'Разведка боем': ['разведка', 'действие', 'тест', 'проверка', 'бой']\n};\n\nconst inputItem = $input.first();\n const historyText = inputItem.json.history_text || '';\n const historyLower = historyText.toLowerCase();\n\nconst domainCount = {};\nObject.keys(DOMAINS).forEach(d => domainCount[d] = 0);\n\n for (const [domain, keywords] of Object.entries(DOMAINS)) {\n  const matches = keywords.filter(k => historyLower.includes(k));\n  domainCount[domain] = matches.length;\n }\n\nconst sortedDomains = Object.entries(domainCount)\n .sort((a, b) => a[1] - b[1])\n  .slice(0, 3)\n .map(x => x[0]);\n\n return [{\n json: {\n   ...inputItem.json,\n   least_used_domains: sortedDomains.join(', '),\n  domain_usage_count: domainCount\n  }\n }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        10016,
+        7328
+      ],
+      "id": "465fae88-ceea-46f5-bab3-602d2e8d1f28",
+      "name": "Calculate Domain Priority"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "status": "stopped"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "active",
+                  "value": "active"
+                },
+                {
+                  "name": "stopped",
+                  "value": "stopped"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "registration_date",
+              "displayName": "registration_date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Ideas",
+              "displayName": "Ideas",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        11056,
+        7008
+      ],
+      "id": "04288aa8-ce70-4594-abf8-39a3da98b8dc",
+      "name": "Mark User as Stopped",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Flow просто сообщения"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6496,
+        8720
+      ],
+      "typeVersion": 1,
+      "id": "5eb1a1df-bb32-4d46-b489-e1a02bde053a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {},
+      "id": "1d76d263-11eb-4682-8f2a-b653c84900a7",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        6848,
+        8768
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "msg-001",
+              "name": "broadcast_message",
+              "value": "🎉 Спасибо, я наконец-то отладила (вроде) этого бота!\n\nТеперь всё должно работать как часы ⏰\n\nПриятного пользования! Не грустите и продолжайте генерировать креативные идеи каждый день! 💡\n\n---\n\n👋 Напоминаю, что тут будет:\n\nКаждый день в 9:00 я присылаю вам новую тему для упражнения \"10 идей\". Это тренажер креативности от Джеймса Альтучера.\n\n🧠 Как это работает:\n— Первые 4-5 идей приходят легко\n— Следующие — с трудом\n— Последние 2 — это чистый креатив, когда мозг \"вспотел\" и начал работать по-настоящему\n\nПросто записывайте 10 идей на заданную тему. Не оценивайте их (\"плохая/хорошая\"), а просто записывайте!\n\nУдачи! 🚀",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ba236a4d-e946-40d0-9f75-48cce7f7aea6",
+      "name": "Set Message",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        7072,
+        8768
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "86a7b666-3bb2-4363-bde8-5e3428e1cad9",
+      "name": "Loop Over Users",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        7520,
+        8768
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $('Set Message').item.json.broadcast_message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "12196371-4848-4e9e-abb5-f3167221162a",
+      "name": "Send Message to User",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        7728,
+        8768
+      ],
+      "webhookId": "129eba77-fa70-4f70-9bf7-48e417e4c4d2",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list",
+          "cachedResultName": "Users",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tbllA90TM4fhcIYFs"
+        },
+        "filterByFormula": "{status}='active'",
+        "options": {}
+      },
+      "id": "7d7e3391-55ec-4a3d-a16d-6c0e2b9c4dcb",
+      "name": "Get All Active Users2",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        7296,
+        8768
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list",
+          "cachedResultName": "10 Ideas Bot",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblwWmiiJ29dKMleu",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $now.toISO() }}",
+            "prompt_text": "={{ $('Send Idea to Users').item.json.result.text }}",
+            "status": "pending",
+            "Users": "= {{ $json.id }}  ",
+            "chat_id": "={{ $json.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "prompt_text",
+              "displayName": "prompt_text",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_answer",
+              "displayName": "user_answer",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ideas_count",
+              "displayName": "ideas_count",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "pending",
+                  "value": "pending"
+                },
+                {
+                  "name": "done",
+                  "value": "done"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Users",
+              "displayName": "Users",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        11040,
+        6512
+      ],
+      "id": "9878f79e-db4b-4de6-8d0b-2f42d6f2de54",
+      "name": "Save Idea to Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        10000,
+        6848
+      ],
+      "id": "365ba81c-228c-4806-96ed-d0b9599b7ce2",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем данные пользователя из Loop (через предыдущие ноды)\nconst loopData = $('Loop Over Items').item.json;\n\n// Получаем результат от Telegram\nconst telegramResult = $input.item.json;\n\n// Объединяем данные\nreturn [{\n  json: {\n    id: loopData.id,                    // record ID из Loop\n    chat_id: loopData.chat_id,          // chat_id из Loop\n    task_text: loopData.task_text,      // текст задания\n    telegram_result: telegramResult     // результат от Telegram\n  }\n}];"
+      },
+      "id": "40783792-85a9-40a7-8cd0-c033b74c6eb3",
+      "name": "Merge User Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        10816,
+        6752
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Получаем данные пользователя из Loop\nconst loopData = $('Loop Over Items').item.json;\n\n// Получаем результат от Telegram (с ошибкой)\nconst telegramResult = $input.item.json;\n\n// Объединяем данные\nreturn [{\n  json: {\n    id: loopData.id,                    // record ID из Loop\n    chat_id: loopData.chat_id,          // chat_id из Loop\n    task_text: loopData.task_text,      // текст задания\n    telegram_result: telegramResult     // результат с ошибкой\n  }\n}];"
+      },
+      "id": "39972ac2-938c-4808-a1b1-64d69a564cb3",
+      "name": "Merge User Data for Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        10816,
+        6944
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily Trigger 9AM": {
+      "main": [
+        [
+          {
+            "node": "Set Test Mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Active Users": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Format History for Prompt\"": {
+      "main": [
+        [
+          {
+            "node": "Check: First Gen or Regen?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI: Critic (Duplicate Check)": {
+      "main": [
+        [
+          {
+            "node": "Parse Critic JSON Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route: PASS or REJECT?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Regeneration Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Regeneration Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Critic JSON Response": {
+      "main": [
+        [
+          {
+            "node": "Route: PASS or REJECT?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Regeneration Data": {
+      "main": [
+        [
+          {
+            "node": "Calculate Domain Priority",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Idea to Users": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Bot Trigger": {
+      "main": [
+        [
+          {
+            "node": "Route: New Message or Edit?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route: New Message or Edit?": {
+      "main": [
+        [
+          {
+            "node": "Check: Is /start Command?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find User (Edited Message)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check: Is /start Command?": {
+      "main": [
+        [
+          {
+            "node": "Register/Update User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find User by Chat ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Register/Update User": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find User by Chat ID": {
+      "main": [
+        [
+          {
+            "node": "Check: Is Reply to Bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check: Is Reply to Bot": {
+      "main": [
+        [
+          {
+            "node": "Find Idea by Prompt Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Last Pending Idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Idea by Prompt Text": {
+      "main": [
+        [
+          {
+            "node": "Calculate Streak & Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Last Pending Idea": {
+      "main": [
+        [
+          {
+            "node": "Calculate Streak & Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save User Answer": {
+      "main": [
+        [
+          {
+            "node": "Random Thank You Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Streak & Stats": {
+      "main": [
+        [
+          {
+            "node": "Update User Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update User Stats": {
+      "main": [
+        [
+          {
+            "node": "Save User Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Random Thank You Message": {
+      "main": [
+        [
+          {
+            "node": "Send Thank You",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weekly Analytics Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get All Active Users1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Active Users1": {
+      "main": [
+        [
+          {
+            "node": "Loop: Calc Stats per User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop: Calc Stats per User": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get User's Ideas (7 days)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User's Ideas (7 days)": {
+      "main": [
+        [
+          {
+            "node": "Calculate Week Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Week Stats": {
+      "main": [
+        [
+          {
+            "node": "Save Avg Word Count",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Avg Word Count": {
+      "main": [
+        [
+          {
+            "node": "Send Weekly Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Weekly Report": {
+      "main": [
+        [
+          {
+            "node": "Loop: Calc Stats per User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find User (Edited Message)": {
+      "main": [
+        [
+          {
+            "node": "Find Last Done Idea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Last Done Idea": {
+      "main": [
+        [
+          {
+            "node": "Update User Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update User Answer": {
+      "main": [
+        [
+          {
+            "node": "Confirm Edit Received",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI generation new task",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI regeneration",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI generation new task": {
+      "main": [
+        [
+          {
+            "node": "AI: Critic (Duplicate Check)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI regeneration": {
+      "main": [
+        [
+          {
+            "node": "AI: Critic (Duplicate Check)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get History (Last 10 Ideas)": {
+      "main": [
+        [
+          {
+            "node": "Format History for Prompt\"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Test Mode": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Merge User Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge User Data for Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get only me": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check: First Gen or Regen?": {
+      "main": [
+        [
+          {
+            "node": "AI generation new task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI regeneration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Get History (Last 10 Ideas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Get only me",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get All Active Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Domain Priority": {
+      "main": [
+        [
+          {
+            "node": "Check: First Gen or Regen?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Message": {
+      "main": [
+        [
+          {
+            "node": "Get All Active Users2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Users": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send Message to User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Message to User": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Active Users2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send Idea to Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Idea to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark User as Stopped": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge User Data": {
+      "main": [
+        [
+          {
+            "node": "Save Idea to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge User Data for Error": {
+      "main": [
+        [
+          {
+            "node": "Mark User as Stopped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "03887961-fefa-4d5c-bca9-3cb1f14752ae",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "21cf5f95a8892e39d85e8bf4e3f852fece0aea4764f927b87374b5c7d9469c12"
+  },
+  "id": "PjqrR9PAif8FGxu7",
+  "tags": []
+}

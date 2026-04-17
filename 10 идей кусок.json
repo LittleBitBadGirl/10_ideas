@@ -1,0 +1,151 @@
+{                                                                                                 
+    "nodes": [                                                                                      
+      {                                                                                             
+        "parameters": {                                                                             
+          "operation": "create",                                                                    
+          "base": {                                                                                 
+            "__rl": true,                                                                           
+            "value": "appJjNzkbgeLXH8Vn",                                                           
+            "mode": "list",                                                                         
+            "cachedResultName": "10 Ideas Bot",                                                     
+            "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn"                             
+          },                                                                                        
+          "table": {                                                                                
+            "__rl": true,                                                                           
+            "value": "tblwWmiiJ29dKMleu",                                                           
+            "mode": "list",                                                                         
+            "cachedResultName": "Ideas",                                                            
+            "cachedResultUrl": "https://airtable.com/appJjNzkbgeLXH8Vn/tblwWmiiJ29dKMleu"           
+          },                                                                                        
+          "columns": {                                                                              
+            "mappingMode": "defineBelow",                                                           
+            "value": {                                                                              
+              "date": "={{ $now.toISO() }}",                                                        
+              "prompt_text": "={{ $('Send Idea to Users').item.json.result.text }}",                
+              "status": "pending",                                                                  
+              "Users": "={{ [ $json.id ] }}",                                                       
+              "chat_id": "={{ [ $json.id ] }}"                                                      
+            },                                                                                      
+            "matchingColumns": [],                                                                  
+            "schema": [                                                                             
+              {                                                                                     
+                "id": "ID",                                                                         
+                "displayName": "ID",                                                                
+                "required": false,                                                                  
+                "defaultMatch": false,                                                              
+                "canBeUsedToMatch": true,                                                           
+                "display": true,                                                                    
+                "type": "string",                                                                   
+                "readOnly": true,                                                                   
+                "removed": true                                                                     
+              },                                                                                    
+              {                                                                                     
+                "id": "date",                                                                       
+                "displayName": "date",                                                              
+                "required": false,                                                                  
+                "defaultMatch": false,                                                              
+                "canBeUsedToMatch": true,                                                           
+                "display": true,                                                                    
+                "type": "string",                                                                   
+                "readOnly": false,                                                                  
+                "removed": false                                                                    
+              },                                                                                    
+              {                                                                                     
+                "id": "chat_id",                                                                    
+                "displayName": "chat_id",                                                           
+                "required": false,                                                                  
+                "defaultMatch": false,                                                              
+                "canBeUsedToMatch": true,                                                           
+                "display": true,                                                                    
+                "type": "array",                                                                    
+                "readOnly": false,                                                                  
+                "removed": false                                                                    
+              },                                                                                    
+              {                                                                                     
+                "id": "prompt_text",                                                                
+                "displayName": "prompt_text",                                                       
+                "required": false,                                                                  
+                "defaultMatch": false,                                                              
+                "canBeUsedToMatch": true,                                                           
+                "display": true,                                                                    
+                "type": "string",                                                                   
+                "readOnly": false,                                                                  
+                "removed": false                                                                    
+              },                                                                                    
+              {                                                                                     
+                "id": "user_answer",                                                                
+                "displayName": "user_answer",                                                       
+                "required": false,                                                                  
+                "defaultMatch": false,                                                              
+                "canBeUsedToMatch": true,                                                           
+                "display": true,                                                                    
+                "type": "string",                                                                   
+                "readOnly": false,                                                                  
+                "removed": true                                                                     
+              },                                                                                    
+              {                                                                                     
+                "id": "ideas_count",                                                                
+                "displayName": "ideas_count",                                                       
+                "required": false,                                                                  
+                "defaultMatch": false,                                                              
+                "canBeUsedToMatch": true,                                                           
+                "display": true,                                                                    
+                "type": "number",                                                                   
+                "readOnly": false,                                                                  
+                "removed": true                                                                     
+              },                                                                                    
+              {                                                                                     
+                "id": "status",                                                                     
+                "displayName": "status",                                                            
+                "required": false,                                                                  
+                "defaultMatch": false,                                                              
+                "canBeUsedToMatch": true,                                                           
+                "display": true,                                                                    
+                "type": "options",                                                                  
+                "options": [                                                                        
+                  {                                                                                 
+                    "name": "pending",                                                              
+                    "value": "pending"                                                              
+                  },                                                                                
+                  {                                                                                 
+                    "name": "done",                                                                 
+                    "value": "done"                                                                 
+                  }                                                                                 
+                ],                                                                                  
+                "readOnly": false,                                                                  
+                "removed": false                                                                    
+              },                                                                                    
+              {                                                                                     
+                "id": "Users",                                                                      
+                "displayName": "Users",                                                             
+                "required": false,                                                                  
+                "defaultMatch": false,                                                              
+                "canBeUsedToMatch": true,                                                           
+                "display": true,                                                                    
+                "type": "array",                                                                    
+                "readOnly": false,                                                                  
+                "removed": false                                                                    
+              }                                                                                     
+            ],                                                                                      
+            "attemptToConvertTypes": false,                                                         
+            "convertFieldsToString": false                                                          
+          },                                                                                        
+          "options": {                                                                              
+            "typecast": true                                                                        
+          }                                                                                         
+        },                                                                                          
+        "type": "n8n-nodes-base.airtable",                                                          
+        "typeVersion": 2.1,                                                                         
+        "position": [10704, 6736],                                                                  
+        "id": "829e0112-305c-433a-9e6d-2d77d9d705b6",                                               
+        "name": "Save Idea to Airtable",                                                            
+        "credentials": {                                                                            
+          "airtableTokenApi": {                                                                     
+            "id": "srugKsLI7xUMvDME",                                                               
+            "name": "Airtable"                                                                      
+          }                                                                                         
+        }                                                                                           
+      }                                                                                             
+    ],                                                                                              
+    "connections": {}                                                                               
+  }                                  

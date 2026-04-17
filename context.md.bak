@@ -1,0 +1,656 @@
+# Контекст проекта: Telegram бот "10 идей"
+
+## Описание проекта
+Telegram бот отправляет пользователям ежедневно креативные задания типа "10 способов...". Реализован через n8n workflow с:
+- **Генерация**: DeepSeek (AI generation new task / AI regeneration)
+- **Проверка дубликатов**: Claude Haiku 4.5 (AI: Critic)
+- **Хранение**: Airtable (Users + Ideas tables)
+
+## Исходная проблема
+Бот **постоянно уходил в регенерацию**:
+- Доходил до 5 попыток в 100% случаев
+- Всегда использовал fallback (AI Agent с простым промптом)
+- Критик отклонял все задания с similarity_score = 88
+
+## Выполненные исправления
+
+### 1. Критик (AI: Critic) - промпт изменения
+**Локация**: Промт в ноде `AI: Critic (Duplicate Check)`
+
+**Что исправили**:
+- ✅ Добавлен `<emergency_pass>` блок: **автоматический PASS на попытке 3+** (изменено с 4+ на 3+)
+- ✅ Пороги адаптивности: 95→92→85→auto-pass (было 90→92→95)
+- ✅ Правило совпадений: 5+ уникальных слов (≥ 5 букв)
+- ✅ Домен repetition: 5+ раз подряд
+- ✅ Разрешена умеренная гипербола (одно ограничение OK, два = REJECT)
+- ✅ Добавлен `<first_attempt_pass>` — быть менее строгим на первой попытке
+- ✅ maxTokens: 500
+
+**Код emergency_pass**:
+```
+<emergency_pass>
+⚠️ КРИТИЧЕСКАЯ ПРОВЕРКА ПОПЫТКИ:
+- Если текущая попытка >= 3 → НЕМЕДЛЕННО возвращай:
+{
+  "is_duplicate": false,
+  "is_realistic": true,
+  "similarity_score": 0,
+  "reason": "Автоматический PASS на попытке 3+",
+  "similar_to": null,
+  "domain_detected": "auto-pass",
+  "recommendation": null
+}
+
+НЕ ПРОВОДИ НИКАКОГО АНАЛИЗА. НЕ ЧИТАЙ ИСТОРИЮ. Просто верни этот JSON и всё.
+</emergency_pass>
+```
+
+**Код first_attempt_pass**:
+```
+<first_attempt_pass>
+ЕСЛИ regeneration_count = 0:
+- Будь МЕНЕЕ строгим
+- REJECT только если similarity_score ≥ 95
+- is_realistic: true если задание выполнимо (даже если сложное)
+</first_attempt_pass>
+```
+
+### 2. Регенератор (AI regeneration) - промпт упрощение
+**Что исправили**:
+- ✅ BLACK LIST: только 5 ключевых слов (было: все слова > 4 букв)
+- ✅ Добавлена полная библиотека доменов (20 штук)
+- ✅ Упрощен алгоритм: 4 шага вместо 6
+- ✅ История: 10 заданий (было 20)
+- ✅ Исправлена рекомендация критика — теперь это не домен, а подсказка направления
+
+### 3. Format History for Prompt - подсчёт доменов
+**Локация**: Code нода в начале workflow
+
+**Что добавлено**:
+- ✅ Подсчёт использованных доменов в истории
+- ✅ last_5_domains - для запрета повторов
+- ✅ allowed_domains - топ-5 наименее использованных
+- ✅ domain_usage_count - полная статистика
+- ✅ regeneration_count: 0 (инициализация для первой генерации)
+
+**Код**:
+```javascript
+const DOMAINS = [
+  'Социальная алхимия', 'Микро-власть', 'Информационное выживание',
+  'Временная архитектура', 'Энергетический менеджмент', 'Психологический хакинг',
+  'Знаниевая инженерия', 'Контекстное программирование', 'Нарративный контроль',
+  'Метаигровое мышление', 'Эмоциональный джиу-джитсу', 'Туманная навигация',
+  'Конфликтная хореография', 'Племенная дипломатия', 'Калибровка интуиции',
+  'Стратегическое невежество', 'Селективная прозрачность', 'Опционное мышление',
+  'Латеральные прыжки', 'Разведка боем'
+];
+
+const history = items.map((item, index) => `${index + 1}. ${item.json.prompt_text}`).filter(text => text && text.trim() !== '').join('\n');
+
+const usedDomains = items.map(item => {
+  const text = item.json.prompt_text || '';
+  return DOMAINS.find(d => text.includes(d));
+}).filter(Boolean);
+
+const last5Domains = usedDomains.slice(-5);
+
+const domainCount = {};
+DOMAINS.forEach(d => domainCount[d] = 0);
+usedDomains.forEach(d => domainCount[d] = (domainCount[d] || 0) + 1);
+
+const sortedDomains = DOMAINS
+  .map(d => ({ domain: d, count: domainCount[d] }))
+  .sort((a, b) => a.count - b.count)
+  .slice(0, 5)
+  .map(x => x.domain);
+
+return [{
+  json: {
+    history_text: history,
+    history_count: items.length,
+    used_domains: usedDomains,
+    last_5_domains: last5Domains,
+    allowed_domains: sortedDomains,
+    domain_usage_count: domainCount,
+    regeneration_count: 0
+  }
+}];
+```
+
+### 4. Calculate Domain Priority
+**Локация**: Code нода в петле регенерации (после Prepare Regeneration Data)
+
+**Зачем**: Считает приоритет доменов на основе ключевых слов в истории (а не точных названий). Сохраняет все поля из предыдущей ноды.
+
+**Код**:
+```javascript
+const DOMAINS = {
+  'Социальная алхимия': ['конфликт', 'отношения', 'враг', 'союзник', 'предатель', 'авторитет', 'репутация'],
+  'Микро-власть': ['влияние', 'власть', 'контроль', 'манипуляция', 'убедить', 'давление'],
+  'Информационное выживание': ['информация', 'правда', 'поиск', 'данные', 'слух', 'новости'],
+  'Временная архитектура': ['время', 'срок', 'дедлайн', 'опоздание', 'наверстать', 'тайм'],
+  'Энергетический менеджмент': ['энергия', 'burnout', 'выгорание', 'ресурс', 'усталость', 'отдых'],
+  'Психологический хакинг': ['психология', 'убеждение', 'мотивация', 'триггер', 'реакция'],
+  'Знаниевая инженерия': ['знание', 'экзамен', 'учеба', 'структура', 'система', 'понимание'],
+  'Контекстное программирование': ['контекст', 'общение', 'разговор', 'диалог', 'регистр'],
+  'Нарративный контроль': ['история', 'нарратив', 'сценарий', 'роль', 'сюжет'],
+  'Метаигровое мышление': ['правила', 'система', 'лазейка', 'эксплуатация', 'фрейм'],
+  'Эмоциональный джиу-джитсу': ['эмоция', 'агрессия', 'гнев', 'страх', 'перенаправление'],
+  'Туманная навигация': ['неизвестность', 'туман', 'видимость', 'ориентир', 'путь'],
+  'Конфликтная хореография': ['столкновение', 'танец', 'движение', 'конфронтация'],
+  'Племенная дипломатия': ['субкультура', 'племя', 'группа', 'принадлежность', 'круг'],
+  'Калибровка интуиции': ['интуиция', 'чутьё', 'gut feeling', 'предчувствие'],
+  'Стратегическое невежество': ['незнание', 'игнор', 'выбор', 'фокус'],
+  'Селективная прозрачность': ['прозрачность', 'дозирование', 'открытость', 'секрет'],
+  'Опционное мышление': ['альтернатива', 'вариант', 'выбор', 'хедж', 'план б'],
+  'Латеральные прыжки': ['абсурд', 'креатив', 'выход', 'колея', 'нестандарт'],
+  'Разведка боем': ['разведка', 'действие', 'тест', 'проверка', 'бой']
+};
+
+const inputItem = $input.first();
+const historyText = inputItem.json.history_text || '';
+const historyLower = historyText.toLowerCase();
+
+const domainCount = {};
+Object.keys(DOMAINS).forEach(d => domainCount[d] = 0);
+
+for (const [domain, keywords] of Object.entries(DOMAINS)) {
+  const matches = keywords.filter(k => historyLower.includes(k));
+  domainCount[domain] = matches.length;
+}
+
+const sortedDomains = Object.entries(domainCount)
+  .sort((a, b) => a[1] - b[1])
+  .slice(0, 3)
+  .map(x => x[0]);
+
+return [{
+  json: {
+    ...inputItem.json,
+    least_used_domains: sortedDomains.join(', '),
+    domain_usage_count: domainCount
+  }
+}];
+```
+
+### 5. Parse Critic JSON Response
+**Локация**: Code нода после AI: Critic
+
+**Зачем**: Парсит JSON ответ критика, извлекает поля в корень объекта.
+
+**Код**:
+```javascript
+let responseText = $input.item.json.content[0].text;
+
+responseText = responseText
+  .replace(/^```json\n?/gm, '')
+  .replace(/\n?```$/gm, '')
+  .trim();
+
+const criticResponse = JSON.parse(responseText);
+
+return [{
+  json: {
+    ...($input.item.json),
+    is_duplicate: criticResponse.is_duplicate,
+    is_realistic: criticResponse.is_realistic !== undefined ? criticResponse.is_realistic : true,
+    similarity_score: criticResponse.similarity_score,
+    reason: criticResponse.reason,
+    similar_to: criticResponse.similar_to,
+    domain_detected: criticResponse.domain_detected,
+    recommendation: criticResponse.recommendation
+  }
+}];
+```
+
+### 6. Prepare Regeneration Data
+**Локация**: Set нода в петле регенерации
+
+**Поля**:
+- `history_text` — история из Format History
+- `previous_attempt` — отклонённое задание
+- `rejection_reason` — причина от критика
+- `similar_to` — similarity score
+- `recommended_domain` — рекомендация от критика
+- `regeneration_count` — счётчик попыток (инкремент +1)
+- `blacklist_words` — 5 ключевых слов для избегания
+
+**Важно**: `regeneration_count` инкрементится: `{{ ($('Check: First Gen or Regen?').item.json.regeneration_count || 0) + 1 }}`
+
+### 7. Code in JavaScript2
+**Локация**: Code нода после PASS ветки
+
+**Зачем**: Добавляет task_text к данным юзеров для отправки.
+
+**Код**:
+```javascript
+const taskText = $('AI generation new task').first().json.output || 
+                 $('AI regeneration').first().json.output;
+
+const items = $input.all();
+
+return items.map(user => {
+  return {
+    json: {
+      id: user.json.id,
+      chat_id: user.json.chat_id,
+      username: user.json.username,
+      first_name: user.json.first_name,
+      task_text: taskText
+    }
+  };
+});
+```
+
+### 8. Save Idea to Airtable
+**Проблема**: Поля `chat_id` и `Users` в таблице Ideas — это Linked Record, требует массив record ID.
+
+**Решение**: Использовать данные из `Get All Active Users`:
+
+```
+chat_id: {{ [ $json.chat_id ] }}
+Users: {{ [ $json.id ] }}
+prompt_text: {{ $('Send Idea to Users').item.json.result.text }}
+```
+
+### 9. Mark User as Stopped
+**Проблема**: После ошибки Telegram нет доступа к `id` из Airtable.
+
+**Решение**: Использовать данные из `Get All Active Users`:
+
+```
+id (using to match): {{ $('Get All Active Users').item.json.id }}
+status: stopped
+```
+
+### 10. Welcome Broadcast
+**Файл**: `/Users/vera/Desktop/личные доки/СLI/боты/10 идей/welcome-broadcast.json`
+
+**Зачем**: Отдельный workflow для рассылки welcome-сообщения всем активным пользователям.
+
+**Структура**:
+```
+Manual Trigger
+  ↓
+Get All Active Users (Airtable, status='active')
+  ↓
+Loop Over Users (SplitInBatches)
+  ↓
+Send Welcome Message (Telegram)
+  ↓
+Continue Loop
+```
+
+## Архитектура workflow
+
+```
+Daily Trigger 9AM (Schedule)
+  ↓
+Set Test Mode (опционально)
+  ↓
+Switch: Test or Production?
+  ├─ test → Get only me (1 юзер по chat_id)
+  └─ production → Get All Active Users (все active)
+       ↓
+       Merge (Append)
+       ↓
+       Get History (Last 10 Ideas) ← 1 раз, Execute Once
+       ↓
+       Format History for Prompt"
+       ↓
+       Check: First Gen or Regen? (If нода)
+       ├─ true (нет previous_attempt) → AI generation new task
+       └─ false (есть previous_attempt) → AI regeneration
+       ↓
+       AI: Critic (Duplicate Check)
+       ↓
+       Parse Critic JSON Response
+       ↓
+       Route: PASS or REJECT? (Switch)
+       ├─ PASS → Code in JavaScript2 → Send Idea to Users
+       └─ REJECT → Prepare Regeneration Data → Calculate Domain Priority → (петля к Check)
+       ↓
+       Send Idea to Users (Telegram, Continue On Fail)
+       ↓
+       Switch: success/error
+       ├─ Save Idea to Airtable (использует данные из Get All Active Users)
+       └─ Mark User as Stopped (использует данные из Get All Active Users)
+```
+
+## Ключевые ноды
+
+### Критические Code ноды
+1. **Format History for Prompt"** — сбор истории + подсчёт доменов + инициализация regeneration_count
+2. **Calculate Domain Priority** — приоритизация по ключевым словам, сохраняет все поля
+3. **Code in JavaScript2** — добавляет task_text к данным юзеров
+4. **Parse Critic JSON Response** — парсит JSON критика
+
+### AI ноды
+1. **AI generation new task** — DeepSeek, первая генерация
+2. **AI regeneration** — DeepSeek, регенерация (с blacklist и domain rotation)
+3. **AI: Critic (Duplicate Check)** — Claude Haiku 4.5, проверка дубликатов и реализма
+
+### Switch/Route ноды
+1. **Check: First Gen or Regen?** — If нода, проверка на first attempt
+2. **Route: PASS or REJECT?** — Switch по is_duplicate и is_realistic
+3. **Switch (после Send)** — проверка на ошибку отправки
+
+## Ключевые файлы
+
+**Workflow JSON**:
+- `/Users/vera/Downloads/10 идей (13).json` — текущая рабочая версия
+
+**Документация**:
+- `context.md` — этот файл
+
+**Airtable**:
+- База: "10 Ideas Bot" (appJjNzkbgeLXH8Vn)
+- Таблица Users: tbllA90TM4fhcIYFs
+  - Поля: id (record ID), chat_id (Number), username, first_name, status, Ideas (Linked Record), streak_current, streak_record, avg_word_count, total_completed, last_activity_date
+- Таблица Ideas: tblwWmiiJ29dKMleu
+  - Поля: ID, date, chat_id (Linked Record → Users), prompt_text, status, Users (Linked Record → Users), user_answer
+
+**Telegram**:
+- Бот: "10 идей" (@creative_10_ideas_bot)
+- Credential: "Telegram 10 ideas"
+
+## Текущий статус
+
+✅ **Работает**:
+- Генерация заданий через DeepSeek
+- Проверка критиком (Claude Haiku)
+- Петля регенерации до 3 попыток
+- Отправка в Telegram (Continue On Fail)
+- Запись в Airtable (через Linked Record)
+- Обработка заблокированных пользователей (Mark User as Stopped)
+- Welcome broadcast workflow
+
+⚠️ **Известные проблемы**:
+1. **Anthropic API 529 Overloaded** — Claude иногда недоступен
+2. **emergency_pass может игнорироваться** — AI читает весь промт, инструкции могут перебивать emergency_pass
+3. **Get History возвращает все записи** — если нет фильтра, может вернуть 42+ items вместо 10
+
+🔧 **Важные настройки**:
+- Telegram нода: `Continue On Fail` = true
+- Get History: `Execute Once` = true (если не в лупе)
+- Airtable Linked Record поля: требуют массив ID `{{ [ $json.id ] }}`
+
+## Библиотека доменов (20 штук)
+
+1. Социальная алхимия: превращение конфликтов в возможности
+2. Микро-власть: незаметное влияние через малые решения
+3. Информационное выживание: поиск правды без инструментов
+4. Временная архитектура: манипуляция восприятием времени
+5. Энергетический менеджмент: управление burnout и ресурсами
+6. Психологический хакинг: убеждение без аргументов
+7. Знаниевая инженерия: структурирование хаоса информации
+8. Контекстное программирование: переключение регистров общения
+9. Нарративный контроль: переписывание историй событий
+10. Метаигровое мышление: эксплуатация лазеек в системах
+11. Эмоциональный джиу-джитсу: перенаправление агрессии
+12. Туманная навигация: движение при нулевой видимости
+13. Конфликтная хореография: превращение столкновений в танец
+14. Племенная дипломатия: навигация между субкультурами
+15. Калибровка интуиции: тренировка gut feeling
+16. Стратегическое невежество: выбор что НЕ знать
+17. Селективная прозрачность: дозирование информации
+18. Опционное мышление: создание альтернатив как хедж
+19. Латеральные прыжки: выход из колеи через абсурд
+20. Разведка боем: получение информации через action
+
+## Важные замечания
+
+1. **НЕ редактировать JSON вручную** — только через интерфейс n8n
+2. **Всегда экспортировать workflow** после изменений (Download as JSON)
+3. **При копировании кода НЕ копировать номера строк** — они ломают синтаксис
+4. **Выражения в промтах** — использовать `{{ $('NodeName').item.json.field }}`, не JS внутри `{{ }}`
+5. **Get History должна выполняться 1 раз** — включить "Execute Once" в Settings
+6. **Airtable Linked Record** — требует массив: `{{ [ $json.id ] }}`
+7. **Telegram Continue On Fail** — обязательно для обработки заблокированных
+8. **regeneration_count** — должен передаваться по всей цепочке, инициализируется в Format History
+
+## 🔔 НАПОМИНАНИЕ ДЛЯ СЛЕДУЮЩЕЙ СЕССИИ
+
+### ⚠️ ВАЖНО: Улучшить промпты генерации
+
+**Задача**: Обновить промпты в нодах `AI generation new task` и `AI regeneration`, добавив примеры хороших тем в секцию `<few_shot_examples>`.
+
+**Цель**: Генерировать задания более высокого качества — конкретные, с реалистичными ограничениями, применимые к жизни.
+
+**Метод**: Добавить 30 примеров успешных тем, которые пользователи оценили как удачные. Эти примеры демонстрируют паттерны формулировок, которых стоит придерживаться.
+
+#### Паттерны хороших формулировок:
+
+1. **"как X, не Y"** (с реалистичным ограничением):
+   - "как разгрузить менеджеров от рутины, не увеличивая хаос"
+   - "как делегировать задачи членам семьи, не создавая конфликты"
+
+2. **"за X, а не за Y"** (ускорение):
+   - "как доехать до работы за 30 минут, а не за час"
+   - "как выполнить домашнее задание за 20 минут, а не за 1,5 часа"
+
+3. **"при том же Y"** (ресурсное ограничение):
+   - "как увеличить обработку заявок на 20%, при том же числе людей"
+   - "как улучшить качество проектов, при том же объеме работы"
+
+4. **"что перестать делать"** (анти-фичи):
+   - "10 идей «анти‑фичей» — что стоит перестать делать ради фокуса"
+   - "10 способов уменьшить нагрузку, отказавшись от лишних процессов"
+
+5. **Короткие временные рамки**:
+   - "10 идей коротких ритуалов на день, чтобы не выгорать (5–10 минут)"
+   - "10 микро-привычек перед сном, занимающих не больше 5 минут"
+
+6. **Контекст + ограничение**:
+   - "как поддерживать себя в тонусе, если работа сидячая и стрессовая"
+   - "как наладить коммуникацию в удалённой команде, если люди в разных часовых поясах"
+
+#### 30 примеров удачных тем для добавления в промпты:
+
+```
+1. 10 идей, как разгрузить менеджеров от рутины, не увеличивая хаос
+2. 10 идей коротких ритуалов на день, чтобы не выгорать (5–10 минут)
+3. 10 идей «анти‑фичей» — что стоит перестать делать ради фокуса
+4. 10 способов автоматизировать еженедельную отчётность, не меняя инструменты
+5. 10 идей, как улучшить встречи 1‑на‑1, не увеличивая их продолжительность
+6. 10 способов быстрее принимать решения, не потеряв в качестве
+7. 10 идей, как помочь новичку влиться за первые 2 недели
+8. 10 микроулучшений процесса найма, которые не требуют бюджета
+9. 10 способов сделать ежедневное stand‑up полезнее и короче
+10. 10 вещей, которые стоит делегировать, но все боятся
+11. 10 способов поддерживать мотивацию команды без денежных бонусов
+12. 10 идей, как снизить выгорание команды, не меняя объём задач
+13. 10 способов улучшить коммуникацию в удалённой команде
+14. 10 идей коротких перерывов в течение рабочего дня
+15. 10 способов быстро восстановиться после тяжелого рабочего дня
+16. 10 идей, что можно делегировать детям (от 6 до 12 лет)
+17. 10 способов провести выходные с пользой, без сложного планирования
+18. 10 идей семейных ритуалов, которые занимают не больше 10 минут
+19. 10 способов улучшить домашнюю рутину, не покупая новую технику
+20. 10 идей, как наладить время для себя, если дети всегда рядом
+21. 10 способов сделать утро менее хаотичным для всей семьи
+22. 10 идей, как поддерживать себя в тонусе, если работа сидячая и стрессовая
+23. 10 микро-привычек перед сном, занимающих не больше 5 минут
+24. 10 способов улучшить фокус во время работы (без радикальных изменений)
+25. 10 идей, как быстро переключиться из рабочего режима в личное время
+26. 10 способов делать больше за меньшее время, не выгорая
+27. 10 идей, как доехать до работы за 30 минут, а не за час
+28. 10 способов выполнить домашнее задание за 20 минут, а не за 1,5 часа
+29. 10 идей, как увеличить обработку заявок на 20%, при том же числе людей
+30. 10 способов улучшить качество проектов, при том же объеме работы
+```
+
+#### Где обновить:
+
+1. **Нода: AI generation new task**
+   - Найти секцию `<few_shot_examples>` в промпте
+   - Добавить эти 30 примеров
+   - Обновить `<rules>` с паттернами формулировок
+
+2. **Нода: AI regeneration**
+   - Найти секцию `<few_shot_examples>` в промпте
+   - Добавить эти же 30 примеров
+   - Обновить инструкции по использованию паттернов
+
+#### Ожидаемый результат:
+
+После обновления промптов генератор должен чаще создавать задания:
+- С конкретными ограничениями (время, ресурсы, контекст)
+- С реалистичными рамками (5-30 минут, 20%, без бюджета)
+- Применимые к реальной жизни (работа, семья, личное)
+- Без избыточной гиперболы
+- С чёткой структурой "как X, не Y" или "X за Y минут"
+
+---
+
+## История изменений
+
+**2026-02-23**:
+
+### Сессия 1: Отладка регенерации
+- ✅ Исправлен Format History for Prompt — добавлен regeneration_count: 0
+- ✅ Добавлен Calculate Domain Priority — подсчёт по ключевым словам
+- ✅ Исправлен emergency_pass — изменено с 4+ на 3+
+- ✅ Добавлен first_attempt_pass — меньше строгости на первой попытке
+- ✅ Исправлен Parse Critic JSON Response — правильное извлечение полей
+- ✅ Исправлен Code in JavaScript2 — правильная ссылка на ноды
+- ✅ Исправлен Save Idea to Airtable — Linked Record через массив
+- ✅ Исправлен Mark User as Stopped — данные из Get All Active Users
+- ✅ Создан welcome-broadcast.json для рассылки
+- ⚠️ Проблема: Anthropic API 529 ошибки (перегружен)
+- ⚠️ Проблема: emergency_pass может игнорироваться AI
+
+### Сессия 2: Полная переработка архитектуры на Loop Over Items
+**Обнаруженные проблемы**:
+1. Get All Active Users возвращал 7 юзеров вместо 3 (пустой фильтр)
+2. Get User Record ID возвращал 42 записи вместо нужных (пустой фильтр)
+3. Save Idea to Airtable создавал записи для всех юзеров, не только активных
+4. Send Idea to Users писал всем, включая stopped
+5. Поля chat_id и Users были пустыми в Airtable (undefined)
+
+**Корневая причина**: Параллельная обработка пользователей + потеря данных при прохождении через Switch node.
+
+**Решение**: Переход на последовательную обработку с помощью Loop Over Items (SplitInBatches).
+
+**Новая архитектура**:
+```
+Daily Trigger → Get All Active Users → Format History → AI Generation/Regeneration → AI Critic
+  → Code in JavaScript2 (добавляет task_text к юзерам)
+  → Loop Over Items (batchSize=1)
+    → Send Idea to Users (Telegram, Continue On Fail)
+    → Switch (проверка success/error)
+      ├─ success → Merge User Data → Save Idea to Airtable → Loop back
+      └─ error → Merge User Data for Error → Mark User as Stopped → Loop back
+```
+
+**Ключевые изменения**:
+
+1. **Get All Active Users** — исправлен фильтр:
+   ```
+   filterByFormula: {status}='active'
+   ```
+   Было: `filterByFormula: "="` (возвращал всех)
+
+2. **Удалена нода Get User Record ID** — больше не нужна, Loop обрабатывает по одному
+
+3. **Добавлена нода Loop Over Items** (SplitInBatches):
+   - batchSize: 1
+   - Обрабатывает юзеров последовательно
+   - Выходы: Done (индекс 0), Loop (индекс 1)
+
+4. **Создана нода Merge User Data** (Code) — КРИТИЧЕСКИ ВАЖНО:
+   ```javascript
+   const loopData = $('Loop Over Items').item.json;
+   const telegramResult = $input.item.json;
+   return [{
+     json: {
+       id: loopData.id,
+       chat_id: loopData.chat_id,
+       task_text: loopData.task_text,
+       telegram_result: telegramResult
+     }
+   }];
+   ```
+   **Зачем**: Switch node передает только input (результат Telegram API), теряя данные из Loop. Merge восстанавливает id/chat_id из Loop для использования в Save Idea.
+
+   **Файл**: `/Users/vera/Desktop/личные_доки/СLI/боты/10_идей/merge-user-data-node.json`
+
+5. **Создана нода Merge User Data for Error** (Code) — аналогично для ветки ошибок:
+   ```javascript
+   const loopData = $('Loop Over Items').item.json;
+   const telegramResult = $input.item.json;
+   return [{
+     json: {
+       id: loopData.id,
+       chat_id: loopData.chat_id,
+       task_text: loopData.task_text,
+       telegram_result: telegramResult
+     }
+   }];
+   ```
+   **Зачем**: Mark User as Stopped нужен id для обновления статуса, но Switch передает только ошибку от Telegram.
+
+   **Файл**: `/Users/vera/Desktop/личные_доки/СLI/боты/10_идей/merge-user-data-for-error.json`
+
+6. **Save Idea to Airtable** — исправлены параметры:
+   ```
+   date: {{ $now.toISO() }}
+   chat_id: {{ $json.id }}           ← Теперь берется из Merge User Data
+   prompt_text: {{ $json.telegram_result.result.text }}
+   status: pending
+   Users: {{ $json.id }}             ← Теперь берется из Merge User Data
+   ```
+   **Важно**: n8n автоматически оборачивает Linked Record в массив, НЕ использовать `{{ [ $json.id ] }}`
+
+7. **Mark User as Stopped** — исправлены параметры:
+   ```
+   id (using to match): {{ $json.id }}  ← Теперь берется из Merge User Data for Error
+   status: stopped
+   ```
+
+8. **Создан Broadcast Workflow** — для ручной рассылки:
+   - Структура: Manual Trigger → Set Message → Get All Active Users → Loop Over Users → Send Message → Loop back
+   - Использует правильный синтаксис Set node (assignments вместо values)
+   - Файл: `/Users/vera/Desktop/личные_доки/СLI/боты/10_идей/broadcast-fixed.json`
+
+**Критические инсайты**:
+
+- **Switch node теряет контекст Loop** — передает только свой input, не сохраняет данные из Loop
+- **Решение: Merge User Data nodes** — явное объединение данных из Loop с результатами API
+- **Loop Over Items vs параллельная обработка** — последовательная обработка предотвращает конфликты данных
+- **Airtable Linked Records** — n8n автоматически оборачивает в массив, не добавлять квадратные скобки вручную
+
+**Результат**: Бот теперь корректно:
+- Отправляет только активным пользователям
+- Записывает правильные chat_id и Users в Airtable
+- Обрабатывает заблокированных пользователей (Mark as Stopped)
+- Работает стабильно без потери данных
+
+**2026-02-15**: Исправлена проблема с регенерацией
+- Добавлен auto-pass на попытке 4+
+- Упрощены правила критика
+- Исправлена передача данных в Log Rejection
+- Исправлена ссылка в Code in JavaScript2
+
+**2026-02-09**: Исходная версия с проблемами
+- Критик слишком строгий (пороги 70-85-90)
+- Все задания доходят до fallback
+- BLACK LIST убивал все слова
+
+## Следующие шаги
+
+1. **Протестировать 10+ запусков** — собрать статистику:
+   - Сколько PASS с первой попытки
+   - Сколько срабатывает emergency_pass на 3-й попытке
+   - Среднее количество попыток до PASS
+
+2. **Настроить Retry для Anthropic** — в Settings AI: Critic:
+   - Max Retries: 3
+   - Backoff: Exponential
+
+3. **Добавить fallback на DeepSeek** — если Claude возвращает 529
+
+4. **Добавить мониторинг** — уведомления при:
+   - emergency_pass сработал
+   - Все 3 попытки исчерпаны
+   - Пользователь заблокировал бота

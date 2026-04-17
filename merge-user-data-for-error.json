@@ -1,0 +1,15 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Получаем данные пользователя из Loop\nconst loopData = $('Loop Over Items').item.json;\n\n// Получаем результат от Telegram (с ошибкой)\nconst telegramResult = $input.item.json;\n\n// Объединяем данные\nreturn [{\n  json: {\n    id: loopData.id,                    // record ID из Loop\n    chat_id: loopData.chat_id,          // chat_id из Loop\n    task_text: loopData.task_text,      // текст задания\n    telegram_result: telegramResult     // результат с ошибкой\n  }\n}];"
+      },
+      "id": "merge-error-data-002",
+      "name": "Merge User Data for Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [9900, 7100]
+    }
+  ],
+  "connections": {}
+}

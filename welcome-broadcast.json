@@ -1,0 +1,94 @@
+{
+  "name": "Welcome Broadcast",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [240, 300],
+      "id": "trigger",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appJjNzkbgeLXH8Vn",
+          "mode": "list"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbllA90TM4fhcIYFs",
+          "mode": "list"
+        },
+        "filterByFormula": "{status}='active'",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.airtable",
+      "position": [440, 300],
+      "id": "getUsers",
+      "name": "Get All Active Users",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "srugKsLI7xUMvDME",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [640, 300],
+      "id": "loop",
+      "name": "Loop Over Users"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "Привет! 👋 Добро пожаловать в тренажёр креативности «10 идей»!\n\n🧠 ЧТО ЭТО?\nМетод Джеймса Альтучера: каждый день придумывай 10 идей на одну тему. Это как спортзал для мозга — первые идеи лёгкие, последние 2-3 настоящие сокровища.\n\n📅 КАК ЭТО РАБОТАЕТ?\n• Каждый день в 9:00 присылаю новую тему\n• Твоя задача — написать 10 идей в ответ\n• Не фильтруй и не оценивай — пусть льётся поток\n• Можно редактировать ответ, если передумал\n\n🎯 ПРАВИЛА:\n1. Пиши все 10 идей, даже безумные\n2. Не суди идеи в процессе — потом разберёшься\n3. Если пропустил день — не страшно, продолжай дальше\n4. Хочешь паузу? Напиши /stop, вернуться — /start\n\n💡 СОВЕТ:\nСамые ценные идеи приходят после 7-й. Не сдавайся раньше!\n\nГотов? Первое задание уже сегодня в 9:00! 🚀\n\nКоманды:\n/start — начать заново\n/stop — пауза в рассылке\n/help — помощь",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "position": [840, 300],
+      "id": "sendWelcome",
+      "name": "Send Welcome Message",
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": {
+          "id": "c0giFpyXfD8raIpP",
+          "name": "Telegram 10 ideas"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.slice(1);"
+      },
+      "type": "n8n-nodes-base.code",
+      "position": [1040, 200],
+      "id": "continueLoop",
+      "name": "Continue Loop"
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node": "Get All Active Users", "type": "main", "index": 0}]]
+    },
+    "Get All Active Users": {
+      "main": [[{"node": "Loop Over Users", "type": "main", "index": 0}]]
+    },
+    "Loop Over Users": {
+      "main": [
+        [{"node": "Continue Loop", "type": "main", "index": 0}],
+        [{"node": "Send Welcome Message", "type": "main", "index": 0}]
+      ]
+    },
+    "Send Welcome Message": {
+      "main": [[{"node": "Loop Over Users", "type": "main", "index": 0}]]
+    }
+  ]
+}
