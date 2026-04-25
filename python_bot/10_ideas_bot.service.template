@@ -1,0 +1,15 @@
+[Unit]
+Description=10 Ideas Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+User=your_user_name
+WorkingDirectory=/path/to/your/project/python_bot
+ExecStart=/path/to/your/venv/bin/python -m bot
+Restart=always
+RestartSec=5
+EnvironmentFile=/path/to/your/project/python_bot/.env
+
+[Install]
+WantedBy=multi-user.target
