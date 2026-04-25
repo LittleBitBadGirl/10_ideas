@@ -1,0 +1,8 @@
+aiogram
+apscheduler
+sqlalchemy
+aiosqlite
+anthropic
+pydantic
+pydantic-settings
+python-dotenv
